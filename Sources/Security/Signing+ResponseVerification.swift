@@ -19,7 +19,8 @@ extension HTTPResponse where Body == Data? {
         signing: SigningType,
         request: HTTPRequest,
         requestHeaders: HTTPRequest.Headers,
-        publicKey: Signing.PublicKey?
+        publicKey: Signing.PublicKey?,
+        customPublicKey: Signing.PublicKey?
     ) -> VerifiedHTTPResponse<Body> {
         let verificationResult = Self.verificationResult(
             body: self.body,
@@ -29,6 +30,7 @@ extension HTTPResponse where Body == Data? {
             requestDate: self.requestDate,
             request: request,
             publicKey: publicKey,
+            customPublicKey: customPublicKey,
             signing: signing
         )
 
@@ -55,14 +57,27 @@ extension HTTPResponse where Body == Data? {
         requestDate: Date?,
         request: HTTPRequest,
         publicKey: Signing.PublicKey?,
+        customPublicKey: Signing.PublicKey?,
         signing: SigningType
     ) -> VerificationResult {
-        guard let publicKey = publicKey, statusCode.isSuccessfulResponse else {
+        var signatureHeaderName: String = HTTPClient.ResponseHeader.signature.rawValue
+        if let preferredSignatureHeaderName = HTTPResponse.value(forCaseInsensitiveHeaderField: .signatureHeaderName, in: responseHeaders) {
+            signatureHeaderName = preferredSignatureHeaderName
+        }
+        
+        let publicKeyToUse: Signing.PublicKey?
+        if signatureHeaderName == HTTPClient.ResponseHeader.signature.rawValue {
+            publicKeyToUse = publicKey
+        } else {
+            publicKeyToUse = customPublicKey
+        }
+        
+        guard let publicKey = publicKeyToUse, statusCode.isSuccessfulResponse else {
             return .notRequested
         }
 
         guard let signature = HTTPResponse.value(
-            forCaseInsensitiveHeaderField: .signature,
+            forCaseInsensitiveHeaderField: signatureHeaderName,
             in: responseHeaders
         ) else {
             if request.path.supportsSignatureVerification {

@@ -70,6 +70,18 @@ final class Signing: SigningType {
             fail(Strings.signing.invalid_public_key(error.localizedDescription))
         }
     }
+    
+    static func loadCustomPublicKey() -> PublicKey {
+        guard let key = Data(base64Encoded: Self.additionalPublicKey) else {
+            fatalError(Strings.signing.invalid_public_key(Self.additionalPublicKey).description)
+        }
+
+        do {
+            return try Self.createPublicKey(with: key)
+        } catch {
+            fatalError(Strings.signing.invalid_public_key(error.localizedDescription).description)
+        }
+    }
 
     func verify(
         signature: String,
@@ -125,15 +137,15 @@ final class Signing: SigningType {
     ) -> ResponseVerificationMode {
         switch setting {
         case .disabled: return .disabled
-        case .informational: return .informational(Self.loadPublicKey())
-        case .enforced: return .enforced(Self.loadPublicKey())
+        case .informational: return .informational(Self.loadPublicKey(), Self.loadCustomPublicKey())
+        case .enforced: return .enforced(Self.loadPublicKey(), Self.loadCustomPublicKey())
         }
     }
 
     /// - Returns: `ResponseVerificationMode.enforced`
     /// This is useful while ``Configuration.EntitlementVerificationMode`` is unavailable.
     static func enforcedVerificationMode() -> ResponseVerificationMode {
-        return .enforced(Self.loadPublicKey())
+        return .enforced(Self.loadPublicKey(), Self.loadCustomPublicKey())
     }
 
     // MARK: -
@@ -142,6 +154,8 @@ final class Signing: SigningType {
     fileprivate typealias Algorithm = Curve25519.Signing.PublicKey
 
     private static let publicKey = "UC1upXWg5QVmyOSwozp755xLqquBKjjU+di6U8QhMlM="
+    
+    private static let additionalPublicKey = "UC1upXWg5QVmyOSwozp755xLqquBKjjU+di6U8QhMlM="
 
 }
 
@@ -152,16 +166,24 @@ extension Signing {
     enum ResponseVerificationMode {
 
         case disabled
-        case informational(PublicKey)
-        case enforced(PublicKey)
+        case informational(PublicKey, PublicKey)
+        case enforced(PublicKey, PublicKey)
 
         static let `default`: Self = .disabled
 
         var publicKey: PublicKey? {
             switch self {
             case .disabled: return nil
-            case let .informational(key): return key
-            case let .enforced(key): return key
+            case let .informational(key, _): return key
+            case let .enforced(key, _): return key
+            }
+        }
+        
+        var customPublicKey: PublicKey? {
+            switch self {
+            case .disabled: return nil
+            case let .informational(_, key): return key
+            case let .enforced(_, key): return key
             }
         }
 
@@ -263,6 +285,10 @@ extension Signing.SignatureParameters {
         let nonce: Data = self.nonce ?? .init()
         let path: Data = self.path.relativePath.asData
         let postParameterHash: Data = self.requestBody?.postParameterHeader?.asData ?? .init()
+        let temp = HTTPRequest.headerParametersForSignatureHeader(
+            headers: self.requestHeaders,
+            path: self.path
+        )
         let headerParametersHash: Data = HTTPRequest.headerParametersForSignatureHeader(
             headers: self.requestHeaders,
             path: self.path

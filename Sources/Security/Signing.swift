@@ -155,7 +155,7 @@ final class Signing: SigningType {
 
     private static let publicKey = "UC1upXWg5QVmyOSwozp755xLqquBKjjU+di6U8QhMlM="
     
-    private static let additionalPublicKey = "UC1upXWg5QVmyOSwozp755xLqquBKjjU+di6U8QhMlM="
+    private static let additionalPublicKey = "j0IF8rmhbOKhu0vpxOjBDPFvm6Xb/s6BLznnY52mLHU="
 
 }
 

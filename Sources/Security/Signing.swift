@@ -110,7 +110,7 @@ final class Signing: SigningType {
         let payload = signature.component(.payload)
         let messageToVerify = parameters.signature(salt: salt, apiKey: self.apiKey)
 
-        #if DEBUG
+//        #if DEBUG
         Logger.verbose(Strings.signing.verifying_signature(
             signature: signature,
             publicKey: intermediatePublicKey.rawRepresentation,
@@ -119,7 +119,7 @@ final class Signing: SigningType {
             payload: payload,
             message: messageToVerify
         ))
-        #endif
+//        #endif
 
         let isValid = intermediatePublicKey.isValidSignature(payload, for: messageToVerify)
 

@@ -37,7 +37,7 @@ enum SigningStrings {
 
     case request_date_missing_from_headers(HTTPRequest)
 
-    #if DEBUG
+//    #if DEBUG
     case verifying_signature(signature: Data,
                              publicKey: Data,
                              parameters: Signing.SignatureParameters,
@@ -45,7 +45,7 @@ enum SigningStrings {
                              payload: Data,
                              message: Data?)
     case invalid_signature_data(HTTPRequest, Data?, HTTPClient.ResponseHeaders, HTTPStatusCode)
-    #endif
+//    #endif
 
 }
 
@@ -99,7 +99,7 @@ extension SigningStrings: LogMessage {
             return "Request to '\(request.path)' required a signature but none was provided. " +
             "This will be reported as a verification failure."
 
-        #if DEBUG
+//        #if DEBUG
         case let .invalid_signature_data(request, data, responseHeaders, statusCode):
             return """
             INVALID SIGNATURE DETECTED:
@@ -126,7 +126,7 @@ extension SigningStrings: LogMessage {
             Message: \(message?.base64EncodedString() ?? "")
             """
 
-        #endif
+//        #endif
         }
     }
 

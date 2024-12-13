@@ -214,6 +214,7 @@ extension HTTPClient {
         case amazonTraceID = "X-Amzn-Trace-ID"
         case retryAfter = "Retry-After"
         case isRetryable = "Is-Retryable"
+        case signatureHeaderName = "X-Signature-Name"
 
     }
 
@@ -387,7 +388,8 @@ private extension HTTPClient {
                     signing: self.signing(for: request.httpRequest),
                     request: request.httpRequest,
                     requestHeaders: requestHeaders,
-                    publicKey: request.verificationMode.publicKey
+                    publicKey: request.verificationMode.publicKey,
+                    customPublicKey: request.verificationMode.customPublicKey
                 )
             }
             // Fetch from ETagManager if available

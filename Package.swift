@@ -79,7 +79,7 @@ let package = Package(
                 resources: [
                     .copy("../Sources/PrivacyInfo.xcprivacy")
                 ],
-                swiftSettings: [visionOSSetting] + ciCompilerFlags + additionalCompilerFlags),
+                swiftSettings: [visionOSSetting] + ciCompilerFlags + additionalCompilerFlags + [.define("ENABLE_TRANSACTION_METADATA")]),
         .target(name: "RevenueCat_CustomEntitlementComputation",
                 path: "CustomEntitlementComputation",
                 exclude: ["Info.plist", "LocalReceiptParsing/ReceiptParser-only-files"],

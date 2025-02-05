@@ -14,12 +14,12 @@
 import RevenueCat
 import SwiftUI
 
-#if PAYWALL_COMPONENTS
+#if !os(macOS) && !os(tvOS) // For Paywalls V2
 
 extension PaywallComponent.FontSize {
 
-    var font: Font {
-        return Font(self.uiFont)
+    func makeFont(familyName: String?) -> Font {
+        return Font(self.makeUIFont(familyName: familyName))
     }
 
     private var textStyle: UIFont.TextStyle {
@@ -36,7 +36,8 @@ extension PaywallComponent.FontSize {
         }
     }
 
-    private var uiFont: UIFont {
+    // swiftlint:disable cyclomatic_complexity
+    private func makeUIFont(familyName: String?) -> UIFont {
         let fontSize: CGFloat
         switch self {
         case .headingXXL: fontSize = 40
@@ -51,8 +52,20 @@ extension PaywallComponent.FontSize {
         case .bodyS: fontSize = 13
         }
 
-        // Create a UIFont and apply dynamic type scaling
-        let baseFont = UIFont.systemFont(ofSize: fontSize, weight: .regular)
+        // Create the base font, with fallback to the system font
+        let baseFont: UIFont
+        if let familyName = familyName {
+            if let customFont = UIFont(name: familyName, size: fontSize) {
+                baseFont = customFont
+            } else {
+                Logger.warning("Custom font '\(familyName)' could not be loaded. Falling back to system font.")
+                baseFont = UIFont.systemFont(ofSize: fontSize, weight: .regular)
+            }
+        } else {
+            baseFont = UIFont.systemFont(ofSize: fontSize, weight: .regular)
+        }
+
+        // Apply dynamic type scaling
         return UIFontMetrics(forTextStyle: self.textStyle).scaledFont(for: baseFont)
     }
 
@@ -207,7 +220,10 @@ extension PaywallComponent.FlexDistribution {
 
 extension PaywallComponent.Padding {
     var edgeInsets: EdgeInsets {
-            EdgeInsets(top: top, leading: leading, bottom: bottom, trailing: trailing)
+            EdgeInsets(top: top ?? 0,
+                       leading: leading ?? 0,
+                       bottom: bottom ?? 0,
+                       trailing: trailing ?? 0)
         }
 
 }
@@ -216,24 +232,39 @@ extension PaywallComponent.FitMode {
     var contentMode: ContentMode {
         switch self {
         case .fit:
-            ContentMode.fit
+            return ContentMode.fit
         case .fill:
-            ContentMode.fill
+            return ContentMode.fill
         }
     }
 }
 
-extension PaywallComponent.ColorInfo {
+extension DisplayableColorInfo {
 
     func toColor(fallback: Color) -> Color {
         switch self {
         case .hex(let hex):
             return hex.toColor(fallback: fallback)
-        case .alias:
-            // WIP: Need to implement this when we actually have alias implemented
+        case .linear, .radial:
             return fallback
         }
     }
+
+    func toGradient() -> Gradient {
+        switch self {
+        case .hex:
+            return Gradient(colors: [.clear])
+        case .linear(_, let points), .radial(let points):
+            let stops = points.map { point in
+                Gradient.Stop(
+                    color: point.color.toColor(fallback: Color.clear),
+                    location: CGFloat(point.percent)/100
+                )
+            }
+            return Gradient(stops: stops)
+        }
+    }
+
 }
 
 extension PaywallComponent.ColorHex {
@@ -259,7 +290,7 @@ extension PaywallComponent.ColorHex {
 
         if scanner.scanHexInt64(&hexNumber) {
             // If Alpha channel is missing, it's a fully opaque color.
-            if hexNumber <= 0xffffff {
+            if hexColor.count == 6 {
                 hexNumber <<= 8
                 hexNumber |= 0xff
             }
@@ -278,11 +309,11 @@ extension PaywallComponent.ColorHex {
 
 }
 
-extension PaywallComponent.ColorScheme {
+extension DisplayableColorScheme {
 
     @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
     func toDynamicColor() -> Color {
-
+        #if os(iOS) || os(tvOS) || os(visionOS) || targetEnvironment(macCatalyst)
         guard let darkModeColor = self.dark else {
             return light.toColor(fallback: Color.clear)
         }
@@ -299,6 +330,22 @@ extension PaywallComponent.ColorScheme {
                 return UIColor(lightModeColor.toColor(fallback: Color.clear))
             }
         })
+        #elseif os(watchOS) || os(macOS)
+        // For platforms where `UIColor` is unavailable, fallback to using the light or dark color directly
+        let currentColorScheme = (Environment(\.colorScheme).wrappedValue)
+        return effectiveColor(for: currentColorScheme).toColor(fallback: Color.clear)
+        #endif
+    }
+
+    func effectiveColor(for colorScheme: ColorScheme) -> DisplayableColorInfo {
+        switch colorScheme {
+        case .light:
+            return light
+        case .dark:
+            return dark ?? light
+        @unknown default:
+            return light
+        }
     }
 
 }

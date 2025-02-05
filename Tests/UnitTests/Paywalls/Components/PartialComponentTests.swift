@@ -15,7 +15,7 @@ import Nimble
 @testable import RevenueCat
 import XCTest
 
-#if PAYWALL_COMPONENTS
+#if !os(macOS) && !os(tvOS) // For Paywalls V2
 
 final class PartialComponentTests: TestCase {
 
@@ -30,22 +30,36 @@ final class PartialComponentTests: TestCase {
         // TextComponent
         (PaywallComponent.TextComponent(
             text: "Test",
-            fontFamily: "Arial",
+            fontName: "Arial",
             fontWeight: .bold,
-            color: .init(light: "#000000"),
-            backgroundColor: .init(light: "#FFFFFF"),
+            color: .init(light: .hex("#000000")),
+            backgroundColor: .init(light: .hex("#FFFFFF")),
             padding: .init(top: 10, bottom: 10, leading: 10, trailing: 10),
             margin: .init(top: 5, bottom: 5, leading: 5, trailing: 5),
-            textStyle: .title,
+            fontSize: 16,
             horizontalAlignment: .leading
         ), PaywallComponent.PartialTextComponent()),
 
         // ImageComponent
         (PaywallComponent.ImageComponent(source: .init(
-            light: .init(original: sampleURL,
+            light: .init(width: 1,
+                         height: 1,
+                         original: sampleURL,
                          heic: sampleURL,
                          heicLowRes: sampleURL))
         ), PaywallComponent.PartialImageComponent()),
+
+        // IconComponent
+        (PaywallComponent.IconComponent(
+            baseUrl: "",
+            iconName: "",
+            formats: .init(svg: "", png: "", heic: "", webp: ""),
+            size: .init(width: .fit, height: .fit),
+            padding: .zero,
+            margin: .zero,
+            color: .init(light: .hex("#000000")),
+            iconBackground: nil
+        ), PaywallComponent.PartialIconComponent()),
 
         // StackComponent
         (PaywallComponent.StackComponent(components: []), PaywallComponent.PartialStackComponent())

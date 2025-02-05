@@ -14,25 +14,27 @@
 import RevenueCat
 import SwiftUI
 
-#if PAYWALL_COMPONENTS
+#if !os(macOS) && !os(tvOS) // For Paywalls V2
 
-enum BackgroundStyle {
+enum BackgroundStyle: Hashable {
 
-    case color(PaywallComponent.ColorScheme)
+    case color(DisplayableColorScheme)
     case image(PaywallComponent.ThemeImageUrls)
-    case gradient
 
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct BackgroundStyleModifier: ViewModifier {
 
+    @Environment(\.colorScheme)
+    var colorScheme
+
     var backgroundStyle: BackgroundStyle?
 
     func body(content: Content) -> some View {
         if let backgroundStyle {
             content
-                .apply(backgroundStyle: backgroundStyle)
+                .apply(backgroundStyle: backgroundStyle, colorScheme: colorScheme)
         } else {
             content
         }
@@ -44,10 +46,37 @@ struct BackgroundStyleModifier: ViewModifier {
 fileprivate extension View {
 
     @ViewBuilder
-    func apply(backgroundStyle: BackgroundStyle) -> some View {
+    func apply(
+        backgroundStyle: BackgroundStyle,
+        colorScheme: ColorScheme
+    ) -> some View {
         switch backgroundStyle {
         case .color(let color):
-            self.background(color.toDynamicColor())
+            switch color.effectiveColor(for: colorScheme) {
+            case .hex:
+                self.background(
+                    color.toDynamicColor()
+                        .edgesIgnoringSafeArea(.all)
+                )
+            case .linear(let degrees, _):
+                self.background {
+                    GradientView(
+                        lightGradient: color.light.toGradient(),
+                        darkGradient: color.dark?.toGradient(),
+                        gradientStyle: .linear(degrees)
+                    )
+                    .edgesIgnoringSafeArea(.all)
+                }
+            case .radial:
+                self.background {
+                    GradientView(
+                        lightGradient: color.light.toGradient(),
+                        darkGradient: color.dark?.toGradient(),
+                        gradientStyle: .radial
+                    )
+                    .edgesIgnoringSafeArea(.all)
+                }
+            }
         case .image(let imageInfo):
             self.background {
                 RemoteImage(
@@ -61,10 +90,7 @@ fileprivate extension View {
                         .scaledToFill()
                         .ignoresSafeArea()
                 }
-            }
-        case .gradient:
-            self.background {
-                // WIP: Add you gradient
+                .edgesIgnoringSafeArea(.all)
             }
         }
     }
@@ -80,7 +106,7 @@ extension View {
 
 }
 
-extension PaywallComponent.Background {
+extension BackgroundStyle {
 
     var backgroundStyle: BackgroundStyle? {
         switch self {
@@ -93,7 +119,7 @@ extension PaywallComponent.Background {
 
 }
 
-extension PaywallComponent.ColorScheme {
+extension DisplayableColorScheme {
 
     var backgroundStyle: BackgroundStyle {
         return .color(self)
@@ -153,11 +179,15 @@ struct BackgrounDStyle_Previews: PreviewProvider {
         testContent
             .backgroundStyle(.image(.init(
                 light: .init(
+                    width: 750,
+                    height: 530,
                     original: lightUrl,
                     heic: lightUrl,
                     heicLowRes: lightUrl
                 ),
                 dark: .init(
+                    width: 1024,
+                    height: 853,
                     original: darkUrl,
                     heic: darkUrl,
                     heicLowRes: darkUrl
@@ -170,11 +200,15 @@ struct BackgrounDStyle_Previews: PreviewProvider {
         testContent
             .backgroundStyle(.image(.init(
                 light: .init(
+                    width: 750,
+                    height: 530,
                     original: lightUrl,
                     heic: lightUrl,
                     heicLowRes: lightUrl
                 ),
                 dark: .init(
+                    width: 1024,
+                    height: 853,
                     original: darkUrl,
                     heic: darkUrl,
                     heicLowRes: darkUrl
@@ -183,6 +217,81 @@ struct BackgrounDStyle_Previews: PreviewProvider {
             .preferredColorScheme(.dark)
             .previewLayout(.sizeThatFits)
             .previewDisplayName("Image - Dark (should be japan cats)")
+
+        testContent
+            .backgroundStyle(
+                BackgroundStyle.color(
+                    PaywallComponent.ColorScheme.init(
+                        light: .linear(30, [
+                            .init(color: "#000000", percent: 0),
+                            .init(color: "#ffffff", percent: 100)
+                        ]),
+                        dark: .linear(30, [
+                            .init(color: "#ff0000", percent: 0),
+                            .init(color: "#E58984", percent: 100)
+                        ])
+                    ).asDisplayable(uiConfigProvider: .init(uiConfig: PreviewUIConfig.make())
+                ))
+            )
+            .preferredColorScheme(.dark)
+            .previewLayout(.sizeThatFits)
+            .previewDisplayName("Linear Gradient - Dark (should be red)")
+
+        testContent
+            .backgroundStyle(
+                BackgroundStyle.color(
+                    PaywallComponent.ColorScheme.init(
+                        light: .linear(30, [
+                            .init(color: "#000000", percent: 0),
+                            .init(color: "#ffffff", percent: 100)
+                        ]),
+                        dark: .linear(30, [
+                            .init(color: "#00E519", percent: 0),
+                            .init(color: "#9DEAD3", percent: 100)
+                        ])
+                    ).asDisplayable(uiConfigProvider: .init(uiConfig: PreviewUIConfig.make()))
+                )
+            )
+            .previewLayout(.sizeThatFits)
+            .previewDisplayName("Linear Gradient - Light (should be green")
+
+        testContent
+            .backgroundStyle(
+                BackgroundStyle.color(
+                    PaywallComponent.ColorScheme.init(
+                        light: .radial([
+                            .init(color: "#000000", percent: 0),
+                            .init(color: "#ffffff", percent: 100)
+                        ]),
+                        dark: .radial([
+                            .init(color: "#ff0000", percent: 0),
+                            .init(color: "#E58984", percent: 100)
+                        ])
+                      ).asDisplayable(uiConfigProvider: .init(uiConfig: PreviewUIConfig.make()))
+                )
+            )
+            .preferredColorScheme(.dark)
+            .previewLayout(.sizeThatFits)
+            .previewDisplayName("Radial Gradient - Dark (should be red)")
+
+        testContent
+            .backgroundStyle(
+                BackgroundStyle.color(
+                    PaywallComponent.ColorScheme.init(
+                        light: .radial([
+
+                            .init(color: "#00E519", percent: 0),
+                            .init(color: "#9DEAD3", percent: 100)
+                        ]),
+                        dark: .radial([
+                            .init(color: "#000000", percent: 0),
+                            .init(color: "#ffffff", percent: 100)
+                        ])
+                      ).asDisplayable(uiConfigProvider: .init(uiConfig: PreviewUIConfig.make()))
+                )
+            )
+            .previewLayout(.sizeThatFits)
+            .previewDisplayName("Radial Gradient - Light (should be green")
     }
 }
 

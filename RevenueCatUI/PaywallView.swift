@@ -23,6 +23,7 @@ import SwiftUI
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 @available(macOS, unavailable, message: "RevenueCatUI does not support macOS yet")
 @available(tvOS, unavailable, message: "RevenueCatUI does not support tvOS yet")
+// swiftlint:disable:next type_body_length
 public struct PaywallView: View {
 
     private let contentToDisplay: PaywallViewConfiguration.Content
@@ -252,23 +253,61 @@ public struct PaywallView: View {
             countries: offering.paywall?.zeroDecimalPlaceCountries
         )
 
-        #if PAYWALL_COMPONENTS
-        if let componentData = offering.paywallComponentsData {
-            PaywallsV2View(
-                paywallComponentsData: componentData,
-                offering: offering,
-                introEligibilityChecker: .default(),
-                showZeroDecimalPlacePrices: showZeroDecimalPlacePrices,
-                onDismiss: {
-                    guard let onRequestedDismissal = self.onRequestedDismissal else {
-                        self.dismiss()
-                        return
-                    }
-                    onRequestedDismissal()
-                }
-            )
-            .environmentObject(self.introEligibility)
-            .environmentObject(self.purchaseHandler)
+        if let paywallComponents = offering.paywallComponents {
+
+            // For fallback view or footer
+            let paywall: PaywallData = .createDefault(with: offering.availablePackages,
+                                                      locale: self.locale)
+
+            switch self.mode {
+            // Show the default/fallback paywall for Paywalls V2 footer views
+            case .footer, .condensedFooter:
+                LoadedOfferingPaywallView(
+                    offering: offering,
+                    activelySubscribedProductIdentifiers: activelySubscribedProductIdentifiers,
+                    paywall: paywall,
+                    template: PaywallData.defaultTemplate,
+                    mode: self.mode,
+                    fonts: fonts,
+                    displayCloseButton: self.displayCloseButton,
+                    introEligibility: checker,
+                    purchaseHandler: purchaseHandler,
+                    locale: locale,
+                    showZeroDecimalPlacePrices: showZeroDecimalPlacePrices
+                )
+            // Show the actually V2 paywall for full screen
+            case .fullScreen:
+                let dataForV1DefaultPaywall = DataForV1DefaultPaywall(
+                    offering: offering,
+                    activelySubscribedProductIdentifiers: activelySubscribedProductIdentifiers,
+                    paywall: paywall,
+                    template: PaywallData.defaultTemplate,
+                    mode: self.mode,
+                    fonts: fonts,
+                    displayCloseButton: self.displayCloseButton,
+                    introEligibility: checker,
+                    purchaseHandler: purchaseHandler,
+                    locale: self.locale,
+                    showZeroDecimalPlacePrices: showZeroDecimalPlacePrices
+                )
+
+                PaywallsV2View(
+                    paywallComponents: paywallComponents,
+                    offering: offering,
+                    introEligibilityChecker: .default(),
+                    showZeroDecimalPlacePrices: showZeroDecimalPlacePrices,
+                    onDismiss: {
+                        guard let onRequestedDismissal = self.onRequestedDismissal else {
+                            self.dismiss()
+                            return
+                        }
+                        onRequestedDismissal()
+                    },
+                    fallbackContent: .paywallV1View(dataForV1DefaultPaywall)
+                )
+                .environmentObject(self.introEligibility)
+                .environmentObject(self.purchaseHandler)
+            }
         } else {
 
             let (paywall, displayedLocale, template, error) = offering.validatedPaywall(locale: self.locale)
@@ -299,35 +338,6 @@ public struct PaywallView: View {
                 paywallView
             }
         }
-        #else
-        let (paywall, displayedLocale, template, error) = offering.validatedPaywall(locale: self.locale)
-
-        let paywallView = LoadedOfferingPaywallView(
-            offering: offering,
-            activelySubscribedProductIdentifiers: activelySubscribedProductIdentifiers,
-            paywall: paywall,
-            template: template,
-            mode: self.mode,
-            fonts: fonts,
-            displayCloseButton: self.displayCloseButton,
-            introEligibility: checker,
-            purchaseHandler: purchaseHandler,
-            locale: displayedLocale,
-            showZeroDecimalPlacePrices: showZeroDecimalPlacePrices
-        )
-
-        if let error {
-            DebugErrorView(
-                "\(error.description)\n" +
-                "You can fix this by editing the paywall in the RevenueCat dashboard.\n" +
-                "The displayed paywall contains default configuration.\n" +
-                "This error will be hidden in production.",
-                replacement: paywallView
-            )
-        } else {
-            paywallView
-        }
-        #endif
     }
 
     // MARK: -
@@ -503,12 +513,23 @@ struct LoadedOfferingPaywallView: View {
 
         if self.displayCloseButton {
             NavigationView {
-                view
-                    .toolbar {
-                        self.makeToolbar(
-                            color: self.getCloseButtonColor(configuration: configuration)
-                        )
-                    }
+                // Prevents navigation bar from being showing as translucent
+                if #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *) {
+                    view
+                        .toolbar {
+                            self.makeToolbar(
+                                color: self.getCloseButtonColor(configuration: configuration)
+                            )
+                        }
+                        .toolbarBackground(.hidden, for: .navigationBar)
+                } else {
+                    view
+                        .toolbar {
+                            self.makeToolbar(
+                                color: self.getCloseButtonColor(configuration: configuration)
+                            )
+                        }
+                }
             }
             .navigationViewStyle(.stack)
         } else {

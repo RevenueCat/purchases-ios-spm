@@ -33,6 +33,12 @@ struct SupportKey: EnvironmentKey {
 
 }
 
+struct CustomerCenterPresentationModeKey: EnvironmentKey {
+
+    static let defaultValue: CustomerCenterPresentationMode = .default
+
+}
+
 extension CustomerCenterConfigData.Localization {
 
     /// Default ``CustomerCenterConfigData.Localization`` value for Environment usage
@@ -53,6 +59,11 @@ extension CustomerCenterConfigData.Appearance {
 
 }
 
+struct CustomerCenterNavigationOptionsKey: EnvironmentKey {
+
+    static let defaultValue: CustomerCenterNavigationOptions = .default
+}
+
 extension EnvironmentValues {
 
     var localization: CustomerCenterConfigData.Localization {
@@ -68,6 +79,16 @@ extension EnvironmentValues {
     var supportInformation: CustomerCenterConfigData.Support? {
         get { self[SupportKey.self] }
         set { self[SupportKey.self] = newValue }
+    }
+
+    var customerCenterPresentationMode: CustomerCenterPresentationMode {
+        get { self[CustomerCenterPresentationModeKey.self] }
+        set { self[CustomerCenterPresentationModeKey.self] = newValue }
+    }
+
+    var navigationOptions: CustomerCenterNavigationOptions {
+        get { self[CustomerCenterNavigationOptionsKey.self] }
+        set { self[CustomerCenterNavigationOptionsKey.self] = newValue }
     }
 
 }

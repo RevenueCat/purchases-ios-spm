@@ -22,6 +22,8 @@ enum IdentityStrings {
 
     case logging_in_with_static_string
 
+    case logging_in_with_preview_mode_appuserid
+
     case login_success
 
     case log_out_called_for_user
@@ -34,7 +36,7 @@ enum IdentityStrings {
 
     case deleting_attributes_none_found
 
-    case invalidating_cached_customer_info
+    case invalidating_http_cache
 
     case switching_user(newUserID: String)
 
@@ -58,6 +60,8 @@ extension IdentityStrings: LogMessage {
             return "The appUserID passed to logIn is a constant string known at compile time. " +
             "This is likely a programmer error. This ID is used to identify the current user. " +
             "See https://docs.revenuecat.com/docs/user-ids for more information."
+        case .logging_in_with_preview_mode_appuserid:
+            return "Using the default preview mode appUserID. The passed appUserID was ignored."
         case .login_success:
             return "Log in successful"
         case .log_out_called_for_user:
@@ -70,8 +74,8 @@ extension IdentityStrings: LogMessage {
             return "currentAppUserID is nil. This might happen if the cache in UserDefaults is unintentionally cleared."
         case .deleting_attributes_none_found:
             return "Attempt to delete attributes for user, but there were none to delete"
-        case .invalidating_cached_customer_info:
-            return "Detected unverified cached CustomerInfo but verification is enabled. Invalidating cache."
+        case .invalidating_http_cache:
+            return "Detected unverified cached CustomerInfo but verification is enabled. Invalidating ETag cache."
         case let .switching_user(newUserID):
             return "Switching to user '\(newUserID)'."
         case let .switching_user_same_app_user_id(newUserID):

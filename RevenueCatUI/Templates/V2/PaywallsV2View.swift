@@ -4,12 +4,12 @@
 //
 //  Created by Josh Holtz on 6/11/24.
 //
-// swiftlint:disable missing_docs
+// swiftlint:disable missing_docs file_length
 
 import RevenueCat
 import SwiftUI
 
-#if PAYWALL_COMPONENTS
+#if !os(macOS) && !os(tvOS) // For Paywalls V2
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private class PaywallStateManager: ObservableObject {
@@ -26,9 +26,54 @@ private struct PaywallState {
     let componentsConfig: PaywallComponentsData.PaywallComponentsConfig
     let viewModelFactory: ViewModelFactory
     let packages: [Package]
-    let componentViewModel: PaywallComponentViewModel
+    let rootViewModel: RootViewModel
     let showZeroDecimalPlacePrices: Bool
 
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+struct DataForV1DefaultPaywall {
+
+    let offering: Offering
+    let activelySubscribedProductIdentifiers: Set<String>
+    let paywall: PaywallData
+    let template: PaywallTemplate
+    let mode: PaywallViewMode
+    let fonts: PaywallFontProvider
+    let displayCloseButton: Bool
+    let introEligibility: TrialOrIntroEligibilityChecker
+    let purchaseHandler: PurchaseHandler
+    let locale: Locale
+    let showZeroDecimalPlacePrices: Bool
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+enum FallbackContent {
+    case paywallV1View(DataForV1DefaultPaywall)
+    case customView(AnyView)
+
+    @ViewBuilder
+    func view() -> some View {
+        switch self {
+        case .paywallV1View(let data):
+            LoadedOfferingPaywallView(
+                offering: data.offering,
+                activelySubscribedProductIdentifiers: data.activelySubscribedProductIdentifiers,
+                paywall: data.paywall,
+                template: data.template,
+                mode: data.mode,
+                fonts: data.fonts,
+                displayCloseButton: data.displayCloseButton,
+                introEligibility: data.introEligibility,
+                purchaseHandler: data.purchaseHandler,
+                locale: data.locale,
+                showZeroDecimalPlacePrices: data.showZeroDecimalPlacePrices
+            )
+        case .customView(let view):
+            view
+        }
+    }
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
@@ -37,22 +82,39 @@ struct PaywallsV2View: View {
     @Environment(\.horizontalSizeClass)
     private var horizontalSizeClass
 
+    @Environment(\.colorScheme)
+    private var colorScheme
+
+    @EnvironmentObject
+    private var purchaseHandler: PurchaseHandler
+
     @StateObject
     private var introOfferEligibilityContext: IntroOfferEligibilityContext
 
     @StateObject
     private var paywallStateManager: PaywallStateManager
 
+    private let paywallComponentsData: PaywallComponentsData
+    private let uiConfigProvider: UIConfigProvider
+    private let offering: Offering
     private let onDismiss: () -> Void
+    private let fallbackContent: FallbackContent
 
     public init(
-        paywallComponentsData: PaywallComponentsData,
+        paywallComponents: Offering.PaywallComponents,
         offering: Offering,
         introEligibilityChecker: TrialOrIntroEligibilityChecker,
         showZeroDecimalPlacePrices: Bool,
-        onDismiss: @escaping () -> Void
+        onDismiss: @escaping () -> Void,
+        fallbackContent: FallbackContent
     ) {
+        let uiConfigProvider = UIConfigProvider(uiConfig: paywallComponents.uiConfig)
+
+        self.paywallComponentsData = paywallComponents.data
+        self.uiConfigProvider = uiConfigProvider
+        self.offering = offering
         self.onDismiss = onDismiss
+        self.fallbackContent = fallbackContent
         self._introOfferEligibilityContext = .init(
             wrappedValue: .init(introEligibilityChecker: introEligibilityChecker)
         )
@@ -66,8 +128,9 @@ struct PaywallsV2View: View {
         self._paywallStateManager = .init(
             wrappedValue: .init(state: Self.createPaywallState(
                 componentsConfig: componentsConfig,
-                componentsLocalizations: paywallComponentsData.componentsLocalizations,
-                defaultLocale: paywallComponentsData.defaultLocale,
+                componentsLocalizations: paywallComponents.data.componentsLocalizations,
+                defaultLocale: paywallComponents.data.defaultLocale,
+                uiConfigProvider: uiConfigProvider,
                 offering: offering,
                 introEligibilityChecker: introEligibilityChecker,
                 showZeroDecimalPlacePrices: showZeroDecimalPlacePrices
@@ -76,21 +139,73 @@ struct PaywallsV2View: View {
     }
 
     public var body: some View {
-        switch self.paywallStateManager.state {
-        case .success(let paywallState):
-            LoadedPaywallsV2View(
-                paywallState: paywallState,
-                onDismiss: self.onDismiss
+        if let errorInfo = self.paywallComponentsData.errorInfo, !errorInfo.isEmpty {
+            // Show fallback paywall and debug error message that
+            // occurred while decoding the paywall
+            self.fallbackViewWithErrorMessage(
+                "Error decoding paywall response on: \(errorInfo.keys.joined(separator: ", "))"
             )
-            .environment(\.screenCondition, ScreenCondition.from(self.horizontalSizeClass))
-            .environmentObject(self.introOfferEligibilityContext)
-            .task {
-                await self.introOfferEligibilityContext.computeEligibility(for: paywallState.packages)
+        } else {
+            switch self.paywallStateManager.state {
+            case .success(let paywallState):
+                LoadedPaywallsV2View(
+                    paywallState: paywallState,
+                    uiConfigProvider: self.uiConfigProvider,
+                    onDismiss: self.onDismiss
+                )
+                .environment(\.screenCondition, ScreenCondition.from(self.horizontalSizeClass))
+                .environmentObject(self.introOfferEligibilityContext)
+                .disabled(self.purchaseHandler.actionInProgress)
+                .onAppear {
+                    self.purchaseHandler.trackPaywallImpression(
+                        self.createEventData()
+                    )
+                }
+                .onDisappear { self.purchaseHandler.trackPaywallClose() }
+                .onChangeOf(self.purchaseHandler.purchased) { purchased in
+                    if purchased {
+                        self.onDismiss()
+                    }
+                }
+                .task {
+                    await self.introOfferEligibilityContext.computeEligibility(for: paywallState.packages)
+                }
+            case .failure(let error):
+                // Show fallback paywall and debug error message that
+                // occurred while validating data and view models
+                self.fallbackViewWithErrorMessage(
+                    "Error validating paywall: \(error.localizedDescription)"
+                )
             }
-        case .failure:
-            // WIP: Need to use fallback paywall
-            Text("Error creating paywall")
         }
+    }
+
+    @ViewBuilder
+    func fallbackViewWithErrorMessage(_ errorMessage: String) -> some View {
+        let fullMessage = """
+        \(errorMessage)
+        Validate your paywall is correct in the RevenueCat dashboard,
+        update your SDK, or contact RevenueCat support.
+        View console logs for full detail.
+        The displayed paywall contains default configuration.
+        This error will be hidden in production.
+        """
+
+        DebugErrorView(
+            fullMessage,
+            replacement: self.fallbackContent.view()
+        )
+    }
+
+    private func createEventData() -> PaywallEvent.Data {
+        return .init(
+            offering: self.offering,
+            paywallComponentsData: self.paywallComponentsData,
+            sessionID: .init(),
+            displayMode: .fullScreen,
+            locale: .current,
+            darkMode: self.colorScheme == .dark
+        )
     }
 
 }
@@ -99,13 +214,15 @@ struct PaywallsV2View: View {
 private struct LoadedPaywallsV2View: View {
 
     private let paywallState: PaywallState
+    private let uiConfigProvider: UIConfigProvider
     private let onDismiss: () -> Void
 
     @StateObject
     private var selectedPackageContext: PackageContext
 
-    init(paywallState: PaywallState, onDismiss: @escaping () -> Void) {
+    init(paywallState: PaywallState, uiConfigProvider: UIConfigProvider, onDismiss: @escaping () -> Void) {
         self.paywallState = paywallState
+        self.uiConfigProvider = uiConfigProvider
         self.onDismiss = onDismiss
 
         self._selectedPackageContext = .init(
@@ -120,18 +237,45 @@ private struct LoadedPaywallsV2View: View {
     }
 
     var body: some View {
-        VStack(spacing: 0) {
-            ComponentsView(
-                componentViewModels: [paywallState.componentViewModel],
-                onDismiss: self.onDismiss
+        GeometryReader { proxy in
+            VStack(spacing: 0) {
+                ComponentsView(
+                    componentViewModels: [.root(paywallState.rootViewModel)],
+                    onDismiss: self.onDismiss
+                )
+            }
+            // Used for header image and sticky footer
+            .environment(\.safeAreaInsets, proxy.safeAreaInsets)
+            // If the first view in the first stack is an image,
+            // we will ignore safe area pass the safe area insets in to environment
+            // If the image is in a ZStack, the ZStack will push non-images
+            // down with the inset
+            .applyIf(paywallState.rootViewModel.firstImageInfo != nil, apply: { view in
+                view
+                    .edgesIgnoringSafeArea(.top)
+            })
+            .environmentObject(self.selectedPackageContext)
+            .frame(maxHeight: .infinity, alignment: .topLeading)
+            .backgroundStyle(
+                self.paywallState.componentsConfig.background
+                    .asDisplayable(uiConfigProvider: uiConfigProvider).backgroundStyle
             )
+            .edgesIgnoringSafeArea(.bottom)
         }
-        .environmentObject(self.selectedPackageContext)
-        .frame(maxHeight: .infinity, alignment: .topLeading)
-        .backgroundStyle(self.paywallState.componentsConfig.background.backgroundStyle)
-        .edgesIgnoringSafeArea(.top)
     }
 
+}
+
+/// Custom EnvironmentKey for safe area insets
+private struct SafeAreaInsetsKey: EnvironmentKey {
+    static let defaultValue: EdgeInsets = EdgeInsets()
+}
+
+extension EnvironmentValues {
+    var safeAreaInsets: EdgeInsets {
+        get { self[SafeAreaInsetsKey.self] }
+        set { self[SafeAreaInsetsKey.self] = newValue }
+    }
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
@@ -142,6 +286,7 @@ fileprivate extension PaywallsV2View {
         componentsConfig: PaywallComponentsData.PaywallComponentsConfig,
         componentsLocalizations: [PaywallComponent.LocaleID: PaywallComponent.LocalizationDictionary],
         defaultLocale: String,
+        uiConfigProvider: UIConfigProvider,
         offering: Offering,
         introEligibilityChecker: TrialOrIntroEligibilityChecker,
         showZeroDecimalPlacePrices: Bool
@@ -157,7 +302,8 @@ fileprivate extension PaywallsV2View {
             let root = try factory.toRootViewModel(
                 componentsConfig: componentsConfig,
                 offering: offering,
-                localizationProvider: localizationProvider
+                localizationProvider: localizationProvider,
+                uiConfigProvider: uiConfigProvider
             )
 
             // WIP: Maybe re-enable this later or add some warnings
@@ -173,7 +319,7 @@ fileprivate extension PaywallsV2View {
                     componentsConfig: componentsConfig,
                     viewModelFactory: factory,
                     packages: packages,
-                    componentViewModel: .root(root),
+                    rootViewModel: root,
                     showZeroDecimalPlacePrices: showZeroDecimalPlacePrices
                 )
             )

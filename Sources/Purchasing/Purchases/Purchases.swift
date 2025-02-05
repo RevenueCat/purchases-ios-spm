@@ -401,6 +401,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                                                                       attributionFetcher: attributionFetcher,
                                                                       attributionDataMigrator: attributionDataMigrator)
         let identityManager = IdentityManager(deviceCache: deviceCache,
+                                              systemInfo: systemInfo,
                                               backend: backend,
                                               customerInfoManager: customerInfoManager,
                                               attributeSyncing: subscriberAttributesManager,
@@ -769,6 +770,8 @@ public extension Purchases {
 
     @objc var isAnonymous: Bool { self.identityManager.currentUserIsAnonymous }
 
+    @objc var isSandbox: Bool { return self.systemInfo.isSandbox }
+
     @objc func getOfferings(completion: @escaping (Offerings?, PublicError?) -> Void) {
         self.getOfferings(fetchPolicy: .default, completion: completion)
     }
@@ -832,6 +835,10 @@ public extension Purchases {
             self.systemInfo.isApplicationBackgrounded { isAppBackgrounded in
                 self.updateOfferingsCache(isAppBackgrounded: isAppBackgrounded)
             }
+
+            self.operationDispatcher.dispatchOnWorkerThread {
+                await self.paywallEventsManager?.resetAppSessionID()
+            }
         }
     }
 
@@ -863,6 +870,10 @@ public extension Purchases {
                     }
                 }
                 return
+            }
+
+            self.operationDispatcher.dispatchOnWorkerThread {
+                await self.paywallEventsManager?.resetAppSessionID()
             }
 
             self.updateAllCaches {
@@ -1018,7 +1029,7 @@ public extension Purchases {
 
     #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
 
-    @objc(params:withCompletion:)
+    @objc(purchaseWithParams:completion:)
     func purchase(_ params: PurchaseParams, completion: @escaping PurchaseCompletedBlock) {
         purchasesOrchestrator.purchase(params: params, completion: completion)
     }
@@ -1232,7 +1243,6 @@ public extension Purchases {
         }
     }
 
-    /// Warning: This is currently experimental and subject to change.
     func redeemWebPurchase(
         webPurchaseRedemption: WebPurchaseRedemption,
         completion: @escaping (CustomerInfo?, PublicError?) -> Void
@@ -1241,7 +1251,6 @@ public extension Purchases {
                                                      completion: completion)
     }
 
-    /// Warning: This is currently experimental and subject to change.
     func redeemWebPurchase(_ webPurchaseRedemption: WebPurchaseRedemption) async -> WebPurchaseRedemptionResult {
         return await self.purchasesOrchestrator.redeemWebPurchase(webPurchaseRedemption)
     }
@@ -1249,7 +1258,7 @@ public extension Purchases {
 
 // swiftlint:enable missing_docs
 
-// MARK: - Paywalls
+// MARK: - Paywalls & Customer Center
 
 @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
 public extension Purchases {
@@ -1257,10 +1266,19 @@ public extension Purchases {
     /// Used by `RevenueCatUI` to keep track of ``PaywallEvent``s.
     func track(paywallEvent: PaywallEvent) async {
         self.purchasesOrchestrator.track(paywallEvent: paywallEvent)
-        await self.paywallEventsManager?.track(paywallEvent: paywallEvent)
+        await self.paywallEventsManager?.track(featureEvent: paywallEvent)
     }
 
-    /// Used by `RevenueCatUI` to download customer center data
+    /// Used by `RevenueCatUI` to keep track of ``CustomerCenterEvent``s.
+    func track(customerCenterEvent: any CustomerCenterEventType) {
+        operationDispatcher.dispatchOnWorkerThread {
+            // If we make CustomerCenterEventType implement FeatureEvent, we have to make FeatureEvent public
+            guard let event = customerCenterEvent as? FeatureEvent else { return }
+            await self.paywallEventsManager?.track(featureEvent: event)
+        }
+    }
+
+    /// Used by `RevenueCatUI` to download Customer Center data
     func loadCustomerCenter() async throws -> CustomerCenterConfigData {
         let response = try await Async.call { completion in
             self.backend.customerCenterConfig.getCustomerCenterConfig(appUserID: self.appUserID,
@@ -1782,10 +1800,6 @@ internal extension Purchases {
 
     var storeKitTimeout: TimeInterval {
         return self.productsManager.requestTimeout
-    }
-
-    var isSandbox: Bool {
-        return self.systemInfo.isSandbox
     }
 
     var observerMode: Bool {

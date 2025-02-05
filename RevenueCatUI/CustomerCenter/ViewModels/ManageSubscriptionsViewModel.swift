@@ -27,9 +27,13 @@ import SwiftUI
 class ManageSubscriptionsViewModel: ObservableObject {
 
     let screen: CustomerCenterConfigData.Screen
+    let paths: [CustomerCenterConfigData.HelpPath]
 
     @Published
     var showRestoreAlert: Bool = false
+    @Published
+    var showPurchases: Bool = false
+
     @Published
     var feedbackSurveyData: FeedbackSurveyData?
     @Published
@@ -47,10 +51,6 @@ class ManageSubscriptionsViewModel: ObservableObject {
         }
     }
 
-    var isLoaded: Bool {
-        return state != .notLoaded
-    }
-
     @Published
     private(set) var purchaseInformation: PurchaseInformation?
     @Published
@@ -63,57 +63,26 @@ class ManageSubscriptionsViewModel: ObservableObject {
 
     init(screen: CustomerCenterConfigData.Screen,
          customerCenterActionHandler: CustomerCenterActionHandler?,
+         purchaseInformation: PurchaseInformation? = nil,
+         refundRequestStatus: RefundRequestStatus? = nil,
          purchasesProvider: ManageSubscriptionsPurchaseType = ManageSubscriptionPurchases(),
          loadPromotionalOfferUseCase: LoadPromotionalOfferUseCaseType? = nil) {
         self.screen = screen
-        self.purchasesProvider = purchasesProvider
-        self.customerCenterActionHandler = customerCenterActionHandler
-        self.loadPromotionalOfferUseCase = loadPromotionalOfferUseCase ?? LoadPromotionalOfferUseCase()
-        self.state = .notLoaded
-    }
-
-    init(screen: CustomerCenterConfigData.Screen,
-         purchaseInformation: PurchaseInformation,
-         customerCenterActionHandler: CustomerCenterActionHandler?,
-         refundRequestStatus: RefundRequestStatus? = nil) {
-        self.screen = screen
+        self.paths = screen.filteredPaths
         self.purchaseInformation = purchaseInformation
         self.purchasesProvider = ManageSubscriptionPurchases()
         self.refundRequestStatus = refundRequestStatus
         self.customerCenterActionHandler = customerCenterActionHandler
-        self.loadPromotionalOfferUseCase = LoadPromotionalOfferUseCase()
-        state = .success
-    }
-
-    func loadScreen() async {
-        do {
-            try await loadPurchaseInformation()
-            self.state = .success
-        } catch {
-            self.state = .error(error)
-        }
-    }
-
-    private func loadPurchaseInformation() async throws {
-        let customerInfo = try await purchasesProvider.customerInfo()
-
-        guard let currentEntitlement = customerInfo.earliestExpiringAppStoreEntitlement(),
-              let product = await purchasesProvider.products([currentEntitlement.productIdentifier]).first
-        else {
-            Logger.warning(Strings.could_not_find_subscription_information)
-            throw CustomerCenterError.couldNotFindSubscriptionInformation
-        }
-
-        let purchaseInformation = PurchaseInformation(entitlement: currentEntitlement,
-                                                      subscribedProduct: product)
-        self.purchaseInformation = purchaseInformation
+        self.loadPromotionalOfferUseCase = loadPromotionalOfferUseCase ?? LoadPromotionalOfferUseCase()
+        self.state = .success
     }
 
 #if os(iOS) || targetEnvironment(macCatalyst)
     func determineFlow(for path: CustomerCenterConfigData.HelpPath) async {
         switch path.detail {
         case let .feedbackSurvey(feedbackSurvey):
-            self.feedbackSurveyData = FeedbackSurveyData(configuration: feedbackSurvey) { [weak self] in
+            self.feedbackSurveyData = FeedbackSurveyData(configuration: feedbackSurvey,
+                                                         path: path) { [weak self] in
                 Task {
                     await self?.onPathSelected(path: path)
                 }
@@ -223,10 +192,14 @@ private extension ManageSubscriptionsViewModel {
                 return
             }
             switch openMethod {
-            case .external:
-                UIApplication.shared.open(url, options: [:], completionHandler: nil)
+            case .external,
+                _ where !url.isWebLink:
+                URLUtilities.openURLIfNotAppExtension(url)
             case .inApp:
                 self.inAppBrowserURL = .init(url: url)
+            @unknown default:
+                Logger.warning(Strings.could_not_determine_type_of_custom_url)
+                URLUtilities.openURLIfNotAppExtension(url)
             }
         default:
             break
@@ -257,6 +230,20 @@ private final class ManageSubscriptionPurchases: ManageSubscriptionsPurchaseType
 
     func products(_ productIdentifiers: [String]) async -> [StoreProduct] {
         await Purchases.shared.products(productIdentifiers)
+    }
+
+}
+
+private extension CustomerCenterConfigData.Screen {
+
+    var filteredPaths: [CustomerCenterConfigData.HelpPath] {
+        return self.paths.filter { path in
+            #if targetEnvironment(macCatalyst)
+                return path.type == .refundRequest
+            #else
+                return path.type != .unknown
+            #endif
+        }
     }
 
 }

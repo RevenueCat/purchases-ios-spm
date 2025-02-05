@@ -14,14 +14,14 @@
 import Foundation
 import RevenueCat
 
-#if PAYWALL_COMPONENTS
+#if !os(macOS) && !os(tvOS) // For Paywalls V2
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 class PackageValidator {
 
     typealias PackageInfo = (package: Package, isSelectedByDefault: Bool)
 
-    private var packageInfos: [PackageInfo] = []
+    private(set) var packageInfos: [PackageInfo] = []
 
     func add(_ package: Package, isSelectedByDefault: Bool) {
         self.packageInfos.append((package, isSelectedByDefault))

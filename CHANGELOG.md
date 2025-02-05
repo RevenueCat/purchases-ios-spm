@@ -1,3 +1,204 @@
+## 5.15.1
+## RevenueCatUI SDK
+### Customer Center
+#### 🐞 Bugfixes
+* fix: Show expired subscriptions if nonEmpty (#4707) via Facundo Menzella (@facumenzella)
+* feat: Add debug section for purchase detail (#4702) via Facundo Menzella (@facumenzella)
+* fix: Use usesNavigationStack instead of usesExistingNavigation (#4706) via Facundo Menzella (@facumenzella)
+* fix: Set environment values for every child view in CustomerCenter (#4704) via Facundo Menzella (@facumenzella)
+
+### 🔄 Other Changes
+* [Paywalls] Fix hex colors with alpha component (#4698) via Mark Villacampa (@MarkVillacampa)
+
+## 5.15.0
+## RevenueCat SDK
+### ✨ New Features
+* Add convenience method for setting PostHog User ID (#4679) via Cody Kerns (@codykerns)
+### 🐞 Bugfixes
+* Do not lint deleted files (#4687) via Facundo Menzella (@facumenzella)
+* fix: Set https urls for packages (#4669) via Facundo Menzella (@facumenzella)
+* Add purchaseWithParams to PurchasesType (#4663) via Will Taylor (@fire-at-will)
+* fix: Fix versions for swift-doc, snapshot-testing & nimble (#4661) via Facundo Menzella (@facumenzella)
+* fix: Use custom label for CompatibilityContentUnavailableView (#4647) via Facundo Menzella (@facumenzella)
+* Deprecate misnamed purchase(params) function in Obj-C (#4645) via Will Taylor (@fire-at-will)
+
+## RevenueCatUI SDK
+### Customer Center
+#### ✨ New Features
+* Introduce CompatibilityLabeledContent (#4659) via Facundo Menzella (@facumenzella)
+* Add support for `displayPurchaseHistoryLink` (#4686) via Facundo Menzella (@facumenzella)
+* Introduce `NavigationOptions` for custom navigation and `CustomerCenterNavigationLink` (#4682) via Facundo Menzella (@facumenzella)
+#### 🐞 Bugfixes
+* Revert changes to public Customer Center API (#4681) via Cesar de la Vega (@vegaro)
+* Dismiss alert using binding instead of environment dismiss (#4653) via Facundo Menzella (@facumenzella)
+
+### 🔄 Other Changes
+* Add View extension based on CompatibilityNavigationStack (#4677) via Facundo Menzella (@facumenzella)
+* fix: Add missing test for support in CustomerCenter (#4691) via Facundo Menzella (@facumenzella)
+* Use config response for `displayPurchaseHistoryLink` (#4690) via Facundo Menzella (@facumenzella)
+* Improve syntax for `CommonLocalizedString` (#4688) via Facundo Menzella (@facumenzella)
+* [Trusted Entitlements] Enable Trusted Entitlements by default (#4672) via Toni Rico (@tonidero)
+* [Trusted Entitlements] Do not clear CustomerInfo upon enabling Trusted Entitlements (#4671) via Toni Rico (@tonidero)
+* [Paywalls V2] Move image mask after sizing (#4675) via Josh Holtz (@joshdholtz)
+* [Paywalls V2] Add masking (concave, convex, circle) and padding/margin to image (#4674) via Josh Holtz (@joshdholtz)
+* [Paywalls V2] Use V1 default paywall when footers are used with V2 paywalls (#4667) via Josh Holtz (@joshdholtz)
+* [Paywalls V2] Added V1 fallback paywall into Paywall V2 error logic (#4666) via Josh Holtz (@joshdholtz)
+* Do not warn when using mac API keys (#4668) via Toni Rico (@tonidero)
+* [Paywalls V2] Prefetch low res images (#4658) via Josh Holtz (@joshdholtz)
+* [Paywalls V2] Convert Codable structs to classes (#4665) via Josh Holtz (@joshdholtz)
+* [Paywalls V2] Icon Component (#4655) via Josh Holtz (@joshdholtz)
+* [Paywalls] Tabs (multi-tier / toggle) component (#4648) via Josh Holtz (@joshdholtz)
+* [Paywalls V2] Fix compilation errors (#4657) via Josh Holtz (@joshdholtz)
+* [Paywalls V2] Accept number as font size for text (#4654) via Josh Holtz (@joshdholtz)
+* [Paywalls] Add Badge Modifier (#4596) via Mark Villacampa (@MarkVillacampa)
+* [Paywalls V2] Updated outdated image component properties (#4649) via Josh Holtz (@joshdholtz)
+* [Paywalls V2] Updating UIConfig aliased colors to contain both light and dark (#4650) via Josh Holtz (@joshdholtz)
+* [Paywalls V2] Fix vstack and hstack growing size when fit (#4646) via Josh Holtz (@joshdholtz)
+* [Paywalls] Use CALayer-backed shadows and refactor Shape.swift (#4630) via Mark Villacampa (@MarkVillacampa)
+* [Paywalls V2] Optionalizing padding, margin, and corner radius properties for safety (#4644) via Josh Holtz (@joshdholtz)
+* [Paywalls V2] Decode rectangle corners as optional (#4640) via Josh Holtz (@joshdholtz)
+
+## 5.14.6
+## RevenueCat SDK
+### 🐞 Bugfixes
+* [EXTERNAL] Lock RateLimiter.shouldProceed() entirely to avoid race conditions (#4635) via @nguyenhuy (#4637) via JayShortway (@JayShortway)
+
+### 🔄 Other Changes
+* [Paywalls V2] Implement V2 variables and functions (#4633) via Josh Holtz (@joshdholtz)
+* [Paywalls] Fix PaywallTester build (#4636) via Mark Villacampa (@MarkVillacampa)
+* [Paywalls] Fix gradient orientation by shifting initial position by 90º and making it rotate clockwise (#4634) via Mark Villacampa (@MarkVillacampa)
+* [Paywalls V2] Add support for alias solid hex colors (not gradients) (#4632) via Josh Holtz (@joshdholtz)
+* [Paywalls V2] Support custom fonts with UIConfig (#4631) via Josh Holtz (@joshdholtz)
+* [Paywalls V2] Add UIConfig to OfferingsResponse (#4628) via Josh Holtz (@joshdholtz)
+
+## 5.14.5
+## RevenueCat SDK
+### 🐞 Bugfixes
+* add `fr_FR` localization (#4624) via Andy Boedo (@aboedo)
+
+## RevenueCatUI SDK
+### Paywallv2
+#### 🐞 Bugfixes
+* [Paywalls V2] Fix analytics and dismiss (#4620) via Josh Holtz (@joshdholtz)
+
+### 🔄 Other Changes
+* [Paywalls V2] Added fallback components (#4621) via Josh Holtz (@joshdholtz)
+
+## 5.14.4
+## RevenueCatUI SDK
+### Paywallv2
+#### 🐞 Bugfixes
+* [Paywalls V2] Fix current offering and sticky footer (#4617) via Josh Holtz (@joshdholtz)
+### Customer Center
+#### 🐞 Bugfixes
+* Use SK2 RenewalInfo to get renewal prices & currency (#4608) via Will Taylor (@fire-at-will)
+
+### 🔄 Other Changes
+* Add Comment to StoreKit2ObserverModePurchaseDetectorTests (#4614) via Will Taylor (@fire-at-will)
+* Fixing text, image, and footer render issues (#4607) via Josh Holtz (@joshdholtz)
+
+## 5.14.3
+## RevenueCatUI SDK
+### Customer Center
+#### 🐞 Bugfixes
+* Fix loading Customer Center when entitlement is granted by another Apple app (#4603) via Cesar de la Vega (@vegaro)
+
+### 🔄 Other Changes
+* Use #fileID instead of #file to avoid including the full path in the compiled binary (#4605) via Mark Villacampa (@MarkVillacampa)
+
+## 5.14.2
+## RevenueCat SDK
+### 🐞 Bugfixes
+* Revert "Always call readyForPromotedProduct on the main actor" (#4599) via Will Taylor (@fire-at-will)
+
+### 🔄 Other Changes
+* [Paywalls] Fix issues with rounded corners and borders (#4594) via Mark Villacampa (@MarkVillacampa)
+
+## 5.14.1
+## RevenueCat SDK
+### 🐞 Bugfixes
+* Always call readyForPromotedProduct on the main actor (#4584) via Will Taylor (@fire-at-will)
+
+### 🔄 Other Changes
+* [WEB-1757] Handle new backend error codes that may show in the redemption endpoint (#4592) via Toni Rico (@tonidero)
+* Update refund granted default string (#4588) via Will Taylor (@fire-at-will)
+* Make web Redemption Link APIs stable (#4591) via Toni Rico (@tonidero)
+* Dont show refund cancelled message when user cancels refund (#4587) via Will Taylor (@fire-at-will)
+* Remove extra beta Customer Center docs (#4585) via Cesar de la Vega (@vegaro)
+* [Paywalls V2] Fix border being hidden by next sibling component (#4523) via Josh Holtz (@joshdholtz)
+
+## 5.14.0
+## RevenueCat SDK
+### 🐞 Bugfixes
+* Support non-JSON object decodable values in `getMetadataValue` (#4555) via Cody Kerns (@codykerns)
+
+## RevenueCatUI SDK
+### Customer Center
+#### ✨ New Features
+* Support toggling update warnings & show update in restore flow (#4571) via Will Taylor (@fire-at-will)
+* Add feedback survey option chosen event (#4528) via Cesar de la Vega (@vegaro)
+* Expose Customer Center to UIKit (#4560) via Will Taylor (@fire-at-will)
+* [Customer Center] Slight improvement to the Customer Center Promotional Offer view (#4554) via Andy Boedo (@aboedo)
+#### 🐞 Bugfixes
+* Calculate restore results based on presence of purchases (#4576) via Will Taylor (@fire-at-will)
+* Always reload customerInfo when Customer Center is loaded (#4575) via Will Taylor (@fire-at-will)
+* Make presentCustomerCenter's onDismiss optional (#4573) via Will Taylor (@fire-at-will)
+* Fix hardcoded title in WrongPlatformView (#4569) via Cesar de la Vega (@vegaro)
+* Fix wrong discriminator on `CustomerCenterAnswerSubmittedEvent` (#4566) via Cesar de la Vega (@vegaro)
+
+### 🔄 Other Changes
+* Add ErrorView to CustomerCenter (#4574) via Cesar de la Vega (@vegaro)
+* Address ConfirmationDialog SwiftUI error log message (#4577) via Will Taylor (@fire-at-will)
+* Refactors the creation of the subscription details in Customer Center (#4515) via Cesar de la Vega (@vegaro)
+* [Paywals] Update paywalls tester Package.resolved (#4570) via Mark Villacampa (@MarkVillacampa)
+* [Paywalls] Fix iOS 13/14 tests (#4568) via Mark Villacampa (@MarkVillacampa)
+* Customer Center DocC updates (#4564) via Will Taylor (@fire-at-will)
+* Fix paywalls tester build in `main` (#4565) via Cesar de la Vega (@vegaro)
+* Hide mode from public init in `CustomerCenterView` (#4563) via Cesar de la Vega (@vegaro)
+* [EXTERNAL] Polished the Polish translation (#4496) via @miszu (#4556) via JayShortway (@JayShortway)
+* Revert "Remove PaywallsTesterTests" (#4557) via Cesar de la Vega (@vegaro)
+
+## 5.13.0
+## RevenueCat SDK
+### ✨ New Features
+* Adds `subscriptions` to `CustomerInfo` (#4508) via Cesar de la Vega (@vegaro)
+### 🐞 Bugfixes
+* [Paywalls] Fix PaywallTester compilation on Xcode 15 (#4540) via Mark Villacampa (@MarkVillacampa)
+* Paywalls: Update Finnish "restore" localization (#4493) via Jeffrey Bunn (@Jethro87)
+
+## RevenueCatUI SDK
+### 🐞 Bugfixes
+* Fix translucent navigation bar on paywalls by making it fully transparent (on iOS 16+) (#4543) via Josh Holtz (@joshdholtz)
+* Fix build for app extensions (#4531) via Cesar de la Vega (@vegaro)
+### Customer Center
+#### 🐞 Bugfixes
+* Adds missing revisionId to CustomerCenter impression event (#4537) via Cesar de la Vega (@vegaro)
+* Customer Center deeplinks should always be opened externally (#4533) via Cesar de la Vega (@vegaro)
+* Use `ManageSubscriptionsView` for users without active subscriptions (#4530) via Cesar de la Vega (@vegaro)
+
+### 🔄 Other Changes
+* run-test-ios-15 in xcode 15 to fix incompatibilities with emergetools (#4319) via Cesar de la Vega (@vegaro)
+* WebPurchaseRedemption: Rename `alreadyRedeemed` result to `purchaseBelongsToOtherUser` (#4542) via Toni Rico (@tonidero)
+* [Paywalls] Add previews for different combinations of vertical/horizontal alignment and flex distributions (#4538) via Mark Villacampa (@MarkVillacampa)
+* Renames isDeeplink to isWebLink (#4535) via Cesar de la Vega (@vegaro)
+* Update Package.resolved (#4534) via Cesar de la Vega (@vegaro)
+* Add repo name (#4532) via Noah Martin (@noahsmartin)
+* [Paywalls] Add Emerge Snapshot Tests (#4529) via Mark Villacampa (@MarkVillacampa)
+* Adds API Test for `jwsRepresentation` in obj-c (#4526) via Andy Boedo (@aboedo)
+* Create `CustomerCenterEvent` (#4392) via Cesar de la Vega (@vegaro)
+* [Paywalls] Add support for gradient backgrounds (#4522) via Mark Villacampa (@MarkVillacampa)
+
+## 5.12.1
+## RevenueCatUI SDK
+### 🐞 Bugfixes
+* Fix PaywallEvents failing to deserialize (#4520) via Cesar de la Vega (@vegaro)
+
+## 5.12.0
+## RevenueCat SDK
+### Win-back Offers
+#### ✨ New Features
+* Add eligibleWinBackOffers(forPackage) functions (#4516) via Will Taylor (@fire-at-will)
+
 ## 5.11.0
 ## RevenueCat SDK
 ### ✨ New Features

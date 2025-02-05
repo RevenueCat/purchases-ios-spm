@@ -11,6 +11,7 @@
 //
 //  Created by Cesar de la Vega on 8/7/24.
 
+import Foundation
 import Nimble
 import XCTest
 
@@ -106,7 +107,11 @@ class CustomerCenterConfigDataTests: TestCase {
                     )
                 ],
                 localization: .init(locale: "en_US", localizedStrings: ["key": "value"]),
-                support: .init(email: "support@example.com")
+                support: .init(
+                    email: "support@example.com",
+                    shouldWarnCustomerToUpdate: false,
+                    displayPurchaseHistoryLink: true
+                )
             ),
             lastPublishedAppVersion: "1.2.3",
             itunesTrackId: 123
@@ -178,9 +183,14 @@ class CustomerCenterConfigDataTests: TestCase {
 
         expect(configData.lastPublishedAppVersion) == "1.2.3"
         expect(configData.productId) == 123
+
+        expect(configData.support.shouldWarnCustomerToUpdate) == false
+        expect(configData.support.email) == "support@example.com"
+        expect(configData.support.displayPurchaseHistoryLink) == true
     }
 
-    func testUnknownValuesHandling() throws {
+    /// The real json uses `snake_case`. This test should initialise the struct with default values
+    func testDefaultValues() throws {
         let jsonString = """
         {
             "customerCenter": {
@@ -244,5 +254,9 @@ class CustomerCenterConfigDataTests: TestCase {
         expect(unknownPath?.type) == .unknown
         expect(unknownPath?.id) == "unknown_path"
         expect(unknownPath?.title) == "Unknown Path"
+
+        expect(configData.support.email) == "support@example.com"
+        expect(configData.support.shouldWarnCustomerToUpdate) == true
+        expect(configData.support.displayPurchaseHistoryLink) == false
     }
 }

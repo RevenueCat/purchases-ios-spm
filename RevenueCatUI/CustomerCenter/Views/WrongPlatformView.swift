@@ -30,53 +30,65 @@ struct WrongPlatformView: View {
     @State
     private var managementURL: URL?
     @State
-    private var subscriptionInformation: PurchaseInformation?
+    private var purchaseInformation: PurchaseInformation
+
+    @EnvironmentObject
+    private var customerCenterViewModel: CustomerCenterViewModel
+
+    private let screen: CustomerCenterConfigData.Screen?
+
+    @Environment(\.appearance)
+    private var appearance: CustomerCenterConfigData.Appearance
+
+    @Environment(\.colorScheme)
+    private var colorScheme
 
     @Environment(\.localization)
     private var localization: CustomerCenterConfigData.Localization
-    @Environment(\.appearance)
-    private var appearance: CustomerCenterConfigData.Appearance
-    @Environment(\.colorScheme)
-    private var colorScheme
+
     @Environment(\.supportInformation)
     private var supportInformation: CustomerCenterConfigData.Support?
+
     @Environment(\.openURL)
     private var openURL
 
     private var supportURL: URL? {
         guard let supportInformation = self.supportInformation else { return nil }
-        let subject = self.localization.commonLocalizedString(for: .defaultSubject)
+        let subject = self.localization[.defaultSubject]
         let body = supportInformation.calculateBody(self.localization)
         return URLUtilities.createMailURLIfPossible(email: supportInformation.email,
                                                     subject: subject,
                                                     body: body)
     }
 
-    init() {
+    init(screen: CustomerCenterConfigData.Screen? = nil,
+         purchaseInformation: PurchaseInformation) {
+        self.screen = screen
+        self._purchaseInformation = State(initialValue: purchaseInformation)
     }
 
     fileprivate init(store: Store,
                      managementURL: URL?,
-                     subscriptionInformation: PurchaseInformation) {
+                     purchaseInformation: PurchaseInformation,
+                     screen: CustomerCenterConfigData.Screen) {
+        self.screen = screen
         self._store = State(initialValue: store)
         self._managementURL = State(initialValue: managementURL)
-        self._subscriptionInformation = State(initialValue: subscriptionInformation)
+        self._purchaseInformation = State(initialValue: purchaseInformation)
     }
 
     var body: some View {
         List {
-            if let subscriptionInformation = self.subscriptionInformation {
-                Section {
-                    SubscriptionDetailsView(purchaseInformation: subscriptionInformation,
-                                            refundRequestStatus: nil)
-                }
+            Section {
+                SubscriptionDetailsView(purchaseInformation: purchaseInformation,
+                                        refundRequestStatus: nil)
             }
             if let managementURL = self.managementURL {
                 Section {
                     AsyncButton {
                         openURL(managementURL)
                     } label: {
-                        Text(localization.commonLocalizedString(for: .manageSubscription))
+                        Text(localization[.manageSubscription])
                     }
                 }
             }
@@ -85,51 +97,21 @@ struct WrongPlatformView: View {
                     AsyncButton {
                         openURL(url)
                     } label: {
-                        Text(localization.commonLocalizedString(for: .contactSupport))
+                        Text(localization[.contactSupport])
                     }
                 }
             }
-
         }
-        .toolbar {
-            ToolbarItem(placement: .compatibleTopBarTrailing) {
-                DismissCircleButton()
-            }
-        }
-        .navigationTitle("How can we help?")
-        .navigationBarTitleDisplayMode(.inline)
+        .dismissCircleButtonToolbar()
+        .applyIf(self.screen?.title != nil, apply: {
+            $0.navigationTitle(self.screen!.title).navigationBarTitleDisplayMode(.inline)
+        })
         .task {
             if store == nil {
-                if let customerInfo = try? await Purchases.shared.customerInfo(),
-                   let entitlement = customerInfo.entitlements.active.first?.value {
-                    self.store = entitlement.store
+                if let customerInfo = try? await Purchases.shared.customerInfo() {
                     self.managementURL = customerInfo.managementURL
-                    self.subscriptionInformation = PurchaseInformation(entitlement: entitlement)
                 }
             }
-        }
-    }
-
-    private func humanReadableInstructions(for store: Store?) -> String {
-        let defaultContactSupport = localization.commonLocalizedString(for: .pleaseContactSupportToManage)
-
-        if let store {
-            switch store {
-            case .appStore, .macAppStore:
-                return localization.commonLocalizedString(for: .appleSubscriptionManage)
-            case .playStore:
-                return localization.commonLocalizedString(for: .googleSubscriptionManage)
-            case .stripe, .rcBilling:
-                return localization.commonLocalizedString(for: .webSubscriptionManage)
-            case .external, .promotional, .unknownStore:
-                return defaultContactSupport
-            case .amazon:
-                return localization.commonLocalizedString(for: .amazonSubscriptionManage)
-            @unknown default:
-                return defaultContactSupport
-            }
-        } else {
-            return defaultContactSupport
         }
     }
 
@@ -187,7 +169,8 @@ struct WrongPlatformView_Previews: PreviewProvider {
                 WrongPlatformView(
                     store: data.store,
                     managementURL: data.managementURL,
-                    subscriptionInformation: getPurchaseInformation(for: data.customerInfo)
+                    purchaseInformation: getPurchaseInformation(for: data.customerInfo),
+                    screen: CustomerCenterConfigTestData.customerCenterData.screens[.management]!
                 )
                 .previewDisplayName(data.displayName)
             }
@@ -195,7 +178,8 @@ struct WrongPlatformView_Previews: PreviewProvider {
     }
 
     private static func getPurchaseInformation(for customerInfo: CustomerInfo) -> PurchaseInformation {
-        return PurchaseInformation(entitlement: customerInfo.entitlements.active.first!.value)
+        return PurchaseInformation(entitlement: customerInfo.entitlements.active.first!.value,
+                                   transaction: customerInfo.subscriptionsByProductIdentifier.values.first!)
     }
 
 }

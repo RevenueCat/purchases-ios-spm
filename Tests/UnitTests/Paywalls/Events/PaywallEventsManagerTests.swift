@@ -25,6 +25,7 @@ class PaywallEventsManagerTests: TestCase {
     private var userProvider: MockCurrentUserProvider!
     private var store: MockPaywallEventStore!
     private var manager: PaywallEventsManager!
+    private var appSessionID = UUID()
 
     override func setUpWithError() throws {
         try super.setUpWithError()
@@ -37,7 +38,8 @@ class PaywallEventsManagerTests: TestCase {
         self.manager = .init(
             internalAPI: self.api,
             userProvider: self.userProvider,
-            store: self.store
+            store: self.store,
+            appSessionID: self.appSessionID
         )
     }
 
@@ -46,11 +48,11 @@ class PaywallEventsManagerTests: TestCase {
     func testTrackEvent() async throws {
         let event: PaywallEvent = .impression(.random(), .random())
 
-        await self.manager.track(paywallEvent: event)
+        await self.manager.track(featureEvent: event)
 
         let events = await self.store.storedEvents
         expect(events) == [
-            try XCTUnwrap(.init(event: event, userID: Self.userID, feature: .paywalls))
+            try createStoredEvent(from: event)
         ]
     }
 
@@ -58,13 +60,13 @@ class PaywallEventsManagerTests: TestCase {
         let event1: PaywallEvent = .impression(.random(), .random())
         let event2: PaywallEvent = .close(.random(), .random())
 
-        await self.manager.track(paywallEvent: event1)
-        await self.manager.track(paywallEvent: event2)
+        await self.manager.track(featureEvent: event1)
+        await self.manager.track(featureEvent: event2)
 
         let events = await self.store.storedEvents
         expect(events) == [
-            try XCTUnwrap(.init(event: event1, userID: Self.userID, feature: .paywalls)),
-            try XCTUnwrap(.init(event: event2, userID: Self.userID, feature: .paywalls))
+            try createStoredEvent(from: event1),
+            try createStoredEvent(from: event2)
         ]
     }
 
@@ -83,9 +85,7 @@ class PaywallEventsManagerTests: TestCase {
         expect(result) == 1
 
         expect(self.api.invokedPostPaywallEvents) == true
-        expect(self.api.invokedPostPaywallEventsParameters) == [[try XCTUnwrap(.init(event: event,
-                                                                                     userID: Self.userID,
-                                                                                     feature: .paywalls))]]
+        expect(self.api.invokedPostPaywallEventsParameters) == [[try createStoredEvent(from: event)]]
 
         await self.verifyEmptyStore()
     }
@@ -102,8 +102,8 @@ class PaywallEventsManagerTests: TestCase {
 
         expect(self.api.invokedPostPaywallEvents) == true
         expect(self.api.invokedPostPaywallEventsParameters) == [
-            [try XCTUnwrap(.init(event: event1, userID: Self.userID, feature: .paywalls))],
-            [try XCTUnwrap(.init(event: event2, userID: Self.userID, feature: .paywalls))]
+            [try createStoredEvent(from: event1)],
+            [try createStoredEvent(from: event2)]
         ]
 
         await self.verifyEmptyStore()
@@ -111,7 +111,7 @@ class PaywallEventsManagerTests: TestCase {
 
     func testFlushOnlyOneEventPostsFirstOne() async throws {
         let event = await self.storeRandomEvent()
-        let storedEvent: StoredEvent = try XCTUnwrap(.init(event: event, userID: Self.userID, feature: .paywalls))
+        let storedEvent = try createStoredEvent(from: event)
 
         _ = await self.storeRandomEvent()
         _ = await self.storeRandomEvent()
@@ -129,7 +129,7 @@ class PaywallEventsManagerTests: TestCase {
 
     func testFlushWithUnsuccessfulPostError() async throws {
         let event = await self.storeRandomEvent()
-        let storedEvent: StoredEvent = try XCTUnwrap(.init(event: event, userID: Self.userID, feature: .paywalls))
+        let storedEvent = try createStoredEvent(from: event)
         let expectedError: NetworkError = .offlineConnection()
 
         self.api.stubbedPostPaywallEventsCompletionResult = .networkError(expectedError)
@@ -187,12 +187,10 @@ class PaywallEventsManagerTests: TestCase {
         }
 
         expect(self.api.invokedPostPaywallEvents) == true
-        let expectedEvent: StoredEvent = try XCTUnwrap(.init(event: event1,
-                                                             userID: Self.userID,
-                                                             feature: .paywalls))
+        let expectedEvent = try createStoredEvent(from: event1)
         expect(self.api.invokedPostPaywallEventsParameters) == [[expectedEvent]]
 
-        await self.verifyEvents([try XCTUnwrap(.init(event: event2, userID: Self.userID, feature: .paywalls))])
+        await self.verifyEvents([try createStoredEvent(from: event2)])
     }
 
     #if swift(>=5.9)
@@ -233,7 +231,7 @@ class PaywallEventsManagerTests: TestCase {
         expect(self.api.invokedPostPaywallEvents) == true
         expect(self.api.invokedPostPaywallEventsParameters).to(haveCount(1))
         expect(self.api.invokedPostPaywallEventsParameters.onlyElement) == [
-            try XCTUnwrap(.init(event: event1, userID: Self.userID, feature: .paywalls))
+            try createStoredEvent(from: event1)
         ]
 
         self.logger.verifyMessageWasLogged(
@@ -243,6 +241,22 @@ class PaywallEventsManagerTests: TestCase {
         )
     }
     #endif
+
+    func testResetAppSessionID() async throws {
+        _ = await self.storeRandomEvent()
+        var storedEvents = await self.store.storedEvents
+        let storedEvent1 = try XCTUnwrap(storedEvents.first)
+        let initialSessionID = storedEvent1.appSessionID
+
+        await self.manager.resetAppSessionID()
+
+        _ = await self.storeRandomEvent()
+        storedEvents = await self.store.storedEvents
+        let storedEvent2 = try XCTUnwrap(storedEvents.last)
+        let newSessionID = storedEvent2.appSessionID
+
+        expect(initialSessionID) != newSessionID
+    }
 
     // MARK: -
 
@@ -257,7 +271,7 @@ private extension PaywallEventsManagerTests {
 
     func storeRandomEvent() async -> PaywallEvent {
         let event: PaywallEvent = .impression(.random(), .random())
-        await self.manager.track(paywallEvent: event)
+        await self.manager.track(featureEvent: event)
 
         return event
     }
@@ -274,6 +288,14 @@ private extension PaywallEventsManagerTests {
     ) async {
         let events = await self.store.storedEvents
         expect(file: file, line: line, events) == expected
+    }
+
+    func createStoredEvent(from event: PaywallEvent) throws -> StoredEvent {
+        return try XCTUnwrap(.init(event: event,
+                                   userID: Self.userID,
+                                   feature: .paywalls,
+                                   appSessionID: self.appSessionID,
+                                   eventDiscriminator: nil))
     }
 
 }

@@ -169,7 +169,7 @@ extension Signing {
         case informational(PublicKey, PublicKey)
         case enforced(PublicKey, PublicKey)
 
-        static let `default`: Self = .disabled
+        static let `default`: Self = .informational(Signing.loadPublicKey(), Signing.loadCustomPublicKey())
 
         var publicKey: PublicKey? {
             switch self {

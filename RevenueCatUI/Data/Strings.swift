@@ -67,6 +67,9 @@ enum Strings {
     case could_not_offer_for_active_subscriptions(String, String)
     case error_fetching_promotional_offer(Error)
     case promo_offer_not_loaded
+    case could_not_determine_type_of_custom_url
+    case active_product_is_not_apple_loading_without_product_information(Store)
+    case could_not_find_product_loading_without_product_information(String)
 
 }
 
@@ -206,6 +209,16 @@ extension Strings: CustomStringConvertible {
 
         case .could_not_offer_for_active_subscriptions(let discount, let subscription):
             return "Could not find offer with id \(discount) for active subscription \(subscription)"
+
+        case .could_not_determine_type_of_custom_url:
+            return "Could not determine the type of custom URL, the URL will be opened externally."
+
+        case .active_product_is_not_apple_loading_without_product_information(let store):
+            return "Active product for user is not an Apple subscription (\(store))." +
+            " Loading without product information."
+
+        case .could_not_find_product_loading_without_product_information(let product):
+            return "Could not find product with id \(product). Loading without product information."
 
         }
     }

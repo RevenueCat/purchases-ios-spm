@@ -2,9 +2,9 @@
 "All subscriptions" = "Kaikki tilaukset";
 "Privacy" = "Yksityisyys";
 "Privacy policy" = "Tietosuojakäytäntö";
-"Purchases restored successfully!" = "Ostokset palautettu onnistuneesti!";
-"Restore" = "Palauttaa";
-"Restore purchases" = "Palauttaa ostot";
+"Purchases restored successfully!" = "Ostot palautettu onnistuneesti!";
+"Restore" = "Palauta";
+"Restore purchases" = "Palauta ostot";
 "Terms" = "Ehdot";
 "Terms and conditions" = "Käyttöehdot";
 "Annual" = "Vuosittainen";
@@ -21,3 +21,4 @@
 "pay_as_you_go_period" = "%@ aikana %@";
 "pay_up_front_period" = "%@ hinnalla %@";
 "then_price_per_period" = "sitten %@";
+"Something went wrong" = "Jotain meni pieleen";

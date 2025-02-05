@@ -41,9 +41,7 @@ class BackendPaywallEventTests: BaseBackendTests {
 
     func testPostPaywallEventsWithOneEvent() throws {
         let event = PaywallEvent.impression(Self.eventCreation1, Self.eventData1)
-        let storedEvent: StoredEvent = try XCTUnwrap(.init(event: event,
-                                                           userID: Self.userID,
-                                                           feature: .paywalls))
+        let storedEvent: StoredEvent = try Self.createStoredEvent(from: event)
 
         let error = waitUntilValue { completion in
             self.internalAPI.postPaywallEvents(events: [storedEvent], completion: completion)
@@ -54,13 +52,9 @@ class BackendPaywallEventTests: BaseBackendTests {
 
     func testPostPaywallEventsWithMultipleEvents() throws {
         let event1 = PaywallEvent.impression(Self.eventCreation1, Self.eventData1)
-        let storedEvent1: StoredEvent = try XCTUnwrap(.init(event: event1,
-                                                            userID: Self.userID,
-                                                            feature: .paywalls))
+        let storedEvent1: StoredEvent = try Self.createStoredEvent(from: event1)
         let event2 = PaywallEvent.close(Self.eventCreation2, Self.eventData2)
-        let storedEvent2: StoredEvent =  try XCTUnwrap(.init(event: event2,
-                                                             userID: Self.userID,
-                                                             feature: .paywalls))
+        let storedEvent2: StoredEvent = try Self.createStoredEvent(from: event2)
 
         let error = waitUntilValue { completion in
             self.internalAPI.postPaywallEvents(events: [storedEvent1, storedEvent2],
@@ -104,5 +98,13 @@ private extension BackendPaywallEventTests {
         localeIdentifier: "en_US",
         darkMode: false
     )
+
+    static func createStoredEvent(from event: PaywallEvent) throws -> StoredEvent {
+        return try XCTUnwrap(.init(event: event,
+                                   userID: Self.userID,
+                                   feature: .paywalls,
+                                   appSessionID: UUID(),
+                                   eventDiscriminator: "impression"))
+    }
 
 }

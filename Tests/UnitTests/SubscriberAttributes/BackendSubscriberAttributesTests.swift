@@ -41,6 +41,7 @@ class BackendSubscriberAttributesTests: TestCase {
             "original_app_user_id": "app_user_id",
             "subscriptions": [
                 "onemonth_freetrial": [
+                    "purchase_date": "2017-07-30T02:40:36Z",
                     "expires_date": "2017-08-30T02:40:36Z"
                 ]
             ]
@@ -51,7 +52,8 @@ class BackendSubscriberAttributesTests: TestCase {
         platformInfo: .init(flavor: "Unity", version: "2.3.3"),
         finishTransactions: true,
         storefrontProvider: MockStorefrontProvider(),
-        storeKitVersion: .versionForTests
+        storeKitVersion: .versionForTests,
+        responseVerificationMode: .disabled
     )
 
     override func setUpWithError() throws {

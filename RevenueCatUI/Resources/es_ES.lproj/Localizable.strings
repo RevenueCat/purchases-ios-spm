@@ -1,4 +1,4 @@
-"OK" = "DE ACUERDO";
+"OK" = "OK";
 "All subscriptions" = "Todas las suscripciones";
 "Privacy" = "Privacidad";
 "Privacy policy" = "Política de privacidad";
@@ -22,3 +22,4 @@
 "pay_as_you_go_period" = "%@ durante %@";
 "pay_up_front_period" = "%@ por %@";
 "then_price_per_period" = "luego %@";
+"Something went wrong" = "Algo salió mal";

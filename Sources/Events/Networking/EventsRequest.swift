@@ -31,18 +31,22 @@ struct EventsRequest {
                     return nil
                 }
                 return AnyEncodable(event)
+            case .customerCenter:
+                switch storedEvent.eventDiscriminator {
+                case CustomerCenterEventDiscriminator.answerSubmitted.rawValue:
+                    guard let event = CustomerCenterAnswerSubmittedEventRequest.create(from: storedEvent) else {
+                        return nil
+                    }
+                    return AnyEncodable(event)
+                default:
+                    guard let event = CustomerCenterEventBaseRequest.createBase(from: storedEvent) else {
+                        return nil
+                    }
+                    return AnyEncodable(event)
+                }
             }
         })
     }
-
-}
-
-protocol FeatureEvent: Encodable {
-
-    var id: String? { get }
-    var version: Int { get }
-    var appUserID: String { get }
-    var sessionID: String { get }
 
 }
 

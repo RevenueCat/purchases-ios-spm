@@ -26,10 +26,18 @@ struct ManageSubscriptionsView: View {
 
     @Environment(\.appearance)
     private var appearance: CustomerCenterConfigData.Appearance
-    @Environment(\.localization)
-    private var localization: CustomerCenterConfigData.Localization
+
     @Environment(\.colorScheme)
     private var colorScheme
+
+    @Environment(\.supportInformation)
+    private var support
+
+    @Environment(\.localization)
+    private var localization: CustomerCenterConfigData.Localization
+
+    @Environment(\.navigationOptions)
+    var navigationOptions
 
     @StateObject
     private var viewModel: ManageSubscriptionsViewModel
@@ -37,9 +45,12 @@ struct ManageSubscriptionsView: View {
     private let customerCenterActionHandler: CustomerCenterActionHandler?
 
     init(screen: CustomerCenterConfigData.Screen,
+         purchaseInformation: PurchaseInformation?,
          customerCenterActionHandler: CustomerCenterActionHandler?) {
-        let viewModel = ManageSubscriptionsViewModel(screen: screen,
-                                                     customerCenterActionHandler: customerCenterActionHandler)
+        let viewModel = ManageSubscriptionsViewModel(
+            screen: screen,
+            customerCenterActionHandler: customerCenterActionHandler,
+            purchaseInformation: purchaseInformation)
         self.init(viewModel: viewModel, customerCenterActionHandler: customerCenterActionHandler)
     }
 
@@ -50,70 +61,29 @@ struct ManageSubscriptionsView: View {
     }
 
     var body: some View {
-        if #available(iOS 16.0, *) {
-            content
-                .navigationDestination(isPresented: .isNotNil(self.$viewModel.feedbackSurveyData)) {
-                    if let feedbackSurveyData = self.viewModel.feedbackSurveyData {
-                        FeedbackSurveyView(feedbackSurveyData: feedbackSurveyData,
-                                           customerCenterActionHandler: self.customerCenterActionHandler,
-                                           isPresented: .isNotNil(self.$viewModel.feedbackSurveyData))
-                    }
-                }
-        } else {
-            content
-                .background(NavigationLink(
-                    destination: self.viewModel.feedbackSurveyData.map { data in
-                        FeedbackSurveyView(feedbackSurveyData: data,
-                                           customerCenterActionHandler: self.customerCenterActionHandler,
-                                           isPresented: .isNotNil(self.$viewModel.feedbackSurveyData))
-                    },
-                    isActive: .isNotNil(self.$viewModel.feedbackSurveyData)
-                ) {
-                    EmptyView()
-                })
-        }
-    }
-
-    @ViewBuilder
-    var content: some View {
-        ZStack {
-            if self.viewModel.isLoaded {
-                List {
-
-                    if let purchaseInformation = self.viewModel.purchaseInformation {
-                        Section {
-                            SubscriptionDetailsView(
-                                purchaseInformation: purchaseInformation,
-                                refundRequestStatus: self.viewModel.refundRequestStatus)
-                        }
-                    }
-
-                    Section {
-                        ManageSubscriptionsButtonsView(viewModel: self.viewModel,
-                                                       loadingPath: self.$viewModel.loadingPath)
-                    } header: {
-                        if let subtitle = self.viewModel.screen.subtitle {
-                            Text(subtitle)
-                                .textCase(nil)
-                        }
-                    }
-                }
-            } else {
-                TintedProgressView()
+        content
+            .compatibleNavigation(
+                item: $viewModel.feedbackSurveyData,
+                usesNavigationStack: navigationOptions.usesNavigationStack
+            ) { feedbackSurveyData in
+                FeedbackSurveyView(
+                    feedbackSurveyData: feedbackSurveyData,
+                    customerCenterActionHandler: self.customerCenterActionHandler,
+                    isPresented: .isNotNil(self.$viewModel.feedbackSurveyData))
+                .environment(\.appearance, appearance)
+                .environment(\.localization, localization)
+                .environment(\.navigationOptions, navigationOptions)
             }
-        }
-        .toolbar {
-            ToolbarItem(placement: .compatibleTopBarTrailing) {
-                DismissCircleButton()
+            .compatibleNavigation(
+                isPresented: $viewModel.showPurchases,
+                usesNavigationStack: navigationOptions.usesNavigationStack
+            ) {
+                PurchaseHistoryView(viewModel: PurchaseHistoryViewModel())
+                    .environment(\.appearance, appearance)
+                    .environment(\.localization, localization)
+                    .environment(\.navigationOptions, navigationOptions)
             }
-        }
-        .task {
-            await loadInformationIfNeeded()
-        }
-        .restorePurchasesAlert(isPresented: self.$viewModel.showRestoreAlert)
-        .sheet(
-            item: self.$viewModel.promotionalOfferData,
-            content: { promotionalOfferData in
+            .sheet(item: self.$viewModel.promotionalOfferData) { promotionalOfferData in
                 PromotionalOfferView(
                     promotionalOffer: promotionalOfferData.promotionalOffer,
                     product: promotionalOfferData.product,
@@ -124,87 +94,71 @@ struct ManageSubscriptionsView: View {
                         }
                     }
                 )
+                .environment(\.appearance, appearance)
+                .environment(\.localization, localization)
                 .interactiveDismissDisabled()
-            })
-        .sheet(item: self.$viewModel.inAppBrowserURL,
-               onDismiss: {
-            self.viewModel.onDismissInAppBrowser()
-        }, content: { inAppBrowserURL in
-            SafariView(url: inAppBrowserURL.url)
-        })
-        .navigationTitle(self.viewModel.screen.title)
-        .navigationBarTitleDisplayMode(.inline)
-    }
-
-}
-
-@available(iOS 15.0, *)
-@available(macOS, unavailable)
-@available(tvOS, unavailable)
-@available(watchOS, unavailable)
-private extension ManageSubscriptionsView {
-
-    func loadInformationIfNeeded() async {
-        if !self.viewModel.isLoaded {
-            await viewModel.loadScreen()
-        }
-    }
-
-}
-
-@available(iOS 15.0, *)
-@available(macOS, unavailable)
-@available(tvOS, unavailable)
-@available(watchOS, unavailable)
-struct ManageSubscriptionsButtonsView: View {
-
-    @ObservedObject
-    var viewModel: ManageSubscriptionsViewModel
-    @Binding
-    var loadingPath: CustomerCenterConfigData.HelpPath?
-    @Environment(\.openURL)
-    var openURL
-
-    @Environment(\.localization)
-    private var localization: CustomerCenterConfigData.Localization
-
-    var body: some View {
-        let filteredPaths = self.viewModel.screen.paths.filter { path in
-#if targetEnvironment(macCatalyst)
-            return path.type == .refundRequest
-#else
-            return path.type != .unknown
-#endif
-        }
-        ForEach(filteredPaths, id: \.id) { path in
-            ManageSubscriptionButton(path: path, viewModel: self.viewModel)
-        }
-    }
-
-}
-
-@available(iOS 15.0, *)
-@available(macOS, unavailable)
-@available(tvOS, unavailable)
-@available(watchOS, unavailable)
-struct ManageSubscriptionButton: View {
-
-    let path: CustomerCenterConfigData.HelpPath
-    @ObservedObject var viewModel: ManageSubscriptionsViewModel
-
-    @Environment(\.appearance) private var appearance: CustomerCenterConfigData.Appearance
-
-    var body: some View {
-        AsyncButton(action: {
-            await self.viewModel.determineFlow(for: path)
-        }, label: {
-            if self.viewModel.loadingPath?.id == path.id {
-                TintedProgressView()
-            } else {
-                Text(path.title)
             }
-        })
-        .disabled(self.viewModel.loadingPath != nil)
+            .sheet(item: self.$viewModel.inAppBrowserURL,
+                   onDismiss: {
+                self.viewModel.onDismissInAppBrowser()
+            }, content: { inAppBrowserURL in
+                SafariView(url: inAppBrowserURL.url)
+            })
+    }
+
+    @ViewBuilder
+    var content: some View {
+        List {
+            if let purchaseInformation = self.viewModel.purchaseInformation {
+                SubscriptionDetailsView(
+                    purchaseInformation: purchaseInformation,
+                    refundRequestStatus: self.viewModel.refundRequestStatus
+                )
+
+                if support?.displayPurchaseHistoryLink == true {
+                    Button {
+                        viewModel.showPurchases = true
+                    } label: {
+                        Text(localization[.seeAllPurchases])
+                            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
+                            .contentShape(Rectangle())
+                    }
+                }
+
+                Section {
+                    ManageSubscriptionsButtonsView(
+                        viewModel: self.viewModel,
+                        loadingPath: self.$viewModel.loadingPath
+                    )
+                } header: {
+                    if let subtitle = self.viewModel.screen.subtitle {
+                        Text(subtitle)
+                            .textCase(nil)
+                    }
+                }
+            } else {
+                let fallbackDescription = localization[.tryCheckRestore]
+
+                Section {
+                    CompatibilityContentUnavailableView(
+                        self.viewModel.screen.title,
+                        systemImage: "exclamationmark.triangle.fill",
+                        description: Text(self.viewModel.screen.subtitle ?? fallbackDescription)
+                    )
+                }
+
+                Section {
+                    ManageSubscriptionsButtonsView(viewModel: self.viewModel,
+                                                   loadingPath: self.$viewModel.loadingPath)
+                }
+            }
+        }
+        .dismissCircleButtonToolbar()
+        .restorePurchasesAlert(isPresented: self.$viewModel.showRestoreAlert)
+        .applyIf(self.viewModel.screen.type == .management, apply: {
+            $0.navigationTitle(self.viewModel.screen.title)
+                .navigationBarTitleDisplayMode(.inline)
+         })
     }
 
 }
@@ -221,8 +175,8 @@ struct ManageSubscriptionsView_Previews: PreviewProvider {
             CompatibilityNavigationStack {
                 let viewModelMonthlyRenewing = ManageSubscriptionsViewModel(
                     screen: CustomerCenterConfigTestData.customerCenterData.screens[.management]!,
-                    purchaseInformation: CustomerCenterConfigTestData.subscriptionInformationMonthlyRenewing,
                     customerCenterActionHandler: nil,
+                    purchaseInformation: CustomerCenterConfigTestData.subscriptionInformationMonthlyRenewing,
                     refundRequestStatus: .success)
                 ManageSubscriptionsView(viewModel: viewModelMonthlyRenewing,
                                         customerCenterActionHandler: nil)
@@ -234,8 +188,8 @@ struct ManageSubscriptionsView_Previews: PreviewProvider {
             CompatibilityNavigationStack {
                 let viewModelYearlyExpiring = ManageSubscriptionsViewModel(
                     screen: CustomerCenterConfigTestData.customerCenterData.screens[.management]!,
-                    purchaseInformation: CustomerCenterConfigTestData.subscriptionInformationYearlyExpiring,
-                    customerCenterActionHandler: nil)
+                    customerCenterActionHandler: nil,
+                    purchaseInformation: CustomerCenterConfigTestData.subscriptionInformationYearlyExpiring)
                 ManageSubscriptionsView(viewModel: viewModelYearlyExpiring,
                                         customerCenterActionHandler: nil)
                 .environment(\.localization, CustomerCenterConfigTestData.customerCenterData.localization)

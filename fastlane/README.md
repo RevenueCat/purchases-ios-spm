@@ -74,6 +74,14 @@ Creates PR changing version to next minor adding a -SNAPSHOT suffix
 
 Setup development environment
 
+### ios build_paywalls_tester_for_emerge
+
+```sh
+[bundle exec] fastlane ios build_paywalls_tester_for_emerge
+```
+
+Build the Paywalls Test app for Emerge Snapshots
+
 ### ios test_ios
 
 ```sh

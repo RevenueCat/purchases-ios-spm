@@ -18,7 +18,11 @@ import XCTest
 
 class ContactSupportUtilitiesTest: TestCase {
 
-    private let support: CustomerCenterConfigData.Support = .init(email: "support@example.com")
+    private let support: CustomerCenterConfigData.Support = .init(
+        email: "support@example.com",
+        shouldWarnCustomerToUpdate: false,
+        displayPurchaseHistoryLink: false
+    )
     private let localization: CustomerCenterConfigData.Localization = .init(locale: "en_US", localizedStrings: [:])
 
     func testSupportEmailBodyWithDefaultDataIsCorrect() {

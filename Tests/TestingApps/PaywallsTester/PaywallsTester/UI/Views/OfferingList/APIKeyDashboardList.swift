@@ -26,7 +26,7 @@ struct APIKeyDashboardList: View {
 
     fileprivate struct PresentedPaywall: Hashable {
         var offering: Offering
-        var mode: PaywallViewMode
+        var mode: PaywallTesterViewMode
     }
 
     @State
@@ -34,6 +34,9 @@ struct APIKeyDashboardList: View {
 
     @State
     private var presentedPaywall: PresentedPaywall?
+
+    @State
+    private var presentedPaywallCover: PresentedPaywall?
 
     var body: some View {
         NavigationView {
@@ -76,7 +79,9 @@ struct APIKeyDashboardList: View {
                             // Need to wait for the paywall sheet to be dismissed before presenting again.
                             // We cannot modify the presented paywall in-place because the paywall components are
                             // cached in a @StateObject on initialization time.
+                            #if DEBUG
                             await Task.sleep(seconds: 1)
+                            #endif
                             self.presentedPaywall = .init(offering: offering, mode: .default)
                         }
                     }
@@ -100,11 +105,7 @@ struct APIKeyDashboardList: View {
     }
 
     private func templateGroupName(offering: Offering) -> String? {
-        #if PAYWALL_COMPONENTS
-        offering.paywall?.templateName ?? offering.paywallComponentsData?.templateName
-        #else
-        offering.paywall?.templateName
-        #endif
+        offering.paywall?.templateName ?? offering.paywallComponents?.data.templateName
     }
 
     @ViewBuilder
@@ -126,11 +127,7 @@ struct APIKeyDashboardList: View {
     }
 
     private func offeringHasComponents(_ offering: Offering) -> Bool {
-        #if PAYWALL_COMPONENTS
-        offering.paywallComponentsData != nil
-        #else
-        false
-        #endif
+        offering.paywallComponents != nil
     }
 
     @ViewBuilder
@@ -179,22 +176,43 @@ struct APIKeyDashboardList: View {
                 .onRestoreCompleted { _ in
                     self.presentedPaywall = nil
                 }
+                .onAppear {
+                    if let errorInfo = paywall.offering.paywallComponents?.data.errorInfo {
+                        print("Paywall V2 Error:", errorInfo.debugDescription)
+                    }
+                }
+        }
+        .fullScreenCover(item: self.$presentedPaywallCover) { paywall in
+            PaywallPresenter(offering: paywall.offering, mode: paywall.mode, introEligility: .eligible)
+                .onRestoreCompleted { _ in
+                    self.presentedPaywall = nil
+                }
+                .onAppear {
+                    if let errorInfo = paywall.offering.paywallComponents?.data.errorInfo {
+                        print("Paywall V2 Error:", errorInfo.debugDescription)
+                    }
+                }
         }
     }
 
     #if !os(watchOS)
     @ViewBuilder
     private func contextMenu(for offering: Offering) -> some View {
-        ForEach(PaywallViewMode.allCases, id: \.self) { mode in
+        ForEach(PaywallTesterViewMode.allCases, id: \.self) { mode in
             self.button(for: mode, offering: offering)
         }
     }
     #endif
 
     @ViewBuilder
-    private func button(for selectedMode: PaywallViewMode, offering: Offering) -> some View {
+    private func button(for selectedMode: PaywallTesterViewMode, offering: Offering) -> some View {
         Button {
-            self.presentedPaywall = .init(offering: offering, mode: selectedMode)
+            switch selectedMode {
+            case .fullScreen:
+                self.presentedPaywallCover = .init(offering: offering, mode: selectedMode)
+            case .sheet, .footer, .condensedFooter:
+                self.presentedPaywall = .init(offering: offering, mode: selectedMode)
+            }
         } label: {
             Text(selectedMode.name)
             Image(systemName: selectedMode.icon)
@@ -210,12 +228,10 @@ struct APIKeyDashboardList: View {
                 HStack {
                     Text(self.offering.serverDescription)
                     Spacer()
-                    #if PAYWALL_COMPONENTS
-                    if let errorInfo = self.offering.paywallComponentsData?.errorInfo, !errorInfo.isEmpty {
+                    if let errorInfo = self.offering.paywallComponents?.data.errorInfo, !errorInfo.isEmpty {
                         Image(systemName: "exclamationmark.circle.fill")
                             .foregroundStyle(Color.red)
                     }
-                    #endif
                 }
             }
             .buttonStyle(.plain)

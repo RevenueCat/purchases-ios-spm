@@ -8,11 +8,9 @@
 
 import Foundation
 
-#if PAYWALL_COMPONENTS
-
 public extension PaywallComponent {
 
-    struct PurchaseButtonComponent: PaywallComponentBase {
+    final class PurchaseButtonComponent: PaywallComponentBase {
 
         let type: ComponentType
         public let stack: PaywallComponent.StackComponent
@@ -24,8 +22,14 @@ public extension PaywallComponent {
             self.stack = stack
         }
 
+        public func hash(into hasher: inout Hasher) {
+            hasher.combine(type)
+            hasher.combine(stack)
+        }
+
+        public static func == (lhs: PurchaseButtonComponent, rhs: PurchaseButtonComponent) -> Bool {
+            return lhs.type == rhs.type && lhs.stack == rhs.stack
+        }
     }
 
 }
-
-#endif

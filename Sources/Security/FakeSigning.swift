@@ -23,8 +23,8 @@ final class FakeSigning: SigningType {
         signature: String,
         with parameters: Signing.SignatureParameters,
         publicKey: Signing.PublicKey
-    ) -> Bool {
-        return false
+    ) -> VerificationReason? {
+        return .signatureFailedVerification
     }
 
     static let `default`: FakeSigning = .init()

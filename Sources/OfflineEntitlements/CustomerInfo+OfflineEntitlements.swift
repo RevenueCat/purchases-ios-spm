@@ -47,6 +47,7 @@ extension CustomerInfo {
         self.init(
             response: content,
             entitlementVerification: Self.verification,
+            entitlementVerificationReason: Self.verificationReason,
             sandboxEnvironmentDetector: sandboxEnvironmentDetector
         )
     }
@@ -94,6 +95,7 @@ private extension CustomerInfo {
 
     /// Purchases are verified with StoreKit 2.
     private static let verification: VerificationResult = .verifiedOnDevice
+    private static let verificationReason: VerificationReason? = nil
 
 }
 

@@ -14,8 +14,6 @@ public enum VerificationReason {
     case requestDateMissingFromHeaders(String)
 }
 
-// Clase wrapper para Objective-C
-@objc(RCVerificationReason)
 public class VerificationReasonContainer: NSObject, @unchecked Sendable {
     
     @objc public enum Reason: Int, Sendable {

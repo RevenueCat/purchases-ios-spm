@@ -39,6 +39,10 @@ import Foundation
     /// ### Related Symbols
     /// - ``VerificationResult``
     @objc public var verification: VerificationResult { return self._verification }
+    
+    @objc public var verificationReason: VerificationReason? {
+        self._verificationReason
+    }
 
     public override var description: String {
         return "<\(NSStringFromClass(Self.self)): " +
@@ -80,6 +84,7 @@ import Foundation
 
     private let _verification: VerificationResult
 
+    private let _verificationReason: VerificationReason?
 }
 
 public extension EntitlementInfos {

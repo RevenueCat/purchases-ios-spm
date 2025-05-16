@@ -39,6 +39,13 @@ import Foundation
     /// ### Related Symbols
     /// - ``VerificationResult``
     @objc public var verification: VerificationResult { return self._verification }
+    
+    @objc public var verificationReason: VerificationReasonContainer? {
+        if let reason = self._verificationReason {
+            return VerificationReasonContainer(reason)
+        }
+        return nil
+    }
 
     public override var description: String {
         return "<\(NSStringFromClass(Self.self)): " +
@@ -60,10 +67,12 @@ import Foundation
 
     init(
         entitlements: [String: EntitlementInfo],
-        verification: VerificationResult
+        verification: VerificationResult,
+        verificationReason: VerificationReason?
     ) {
         self.all = entitlements
         self._verification = verification
+        self._verificationReason = verificationReason
     }
 
     private func isEqual(to other: EntitlementInfos?) -> Bool {
@@ -80,6 +89,7 @@ import Foundation
 
     private let _verification: VerificationResult
 
+    private let _verificationReason: VerificationReason?
 }
 
 public extension EntitlementInfos {
@@ -121,7 +131,8 @@ extension EntitlementInfos {
         purchases: [String: CustomerInfoResponse.Subscription],
         requestDate: Date,
         sandboxEnvironmentDetector: SandboxEnvironmentDetector = BundleSandboxEnvironmentDetector.default,
-        verification: VerificationResult
+        verification: VerificationResult,
+        verificationReason: VerificationReason?
     ) {
         let allEntitlements: [String: EntitlementInfo] = .init(
             uniqueKeysWithValues: entitlements.compactMap { identifier, entitlement in
@@ -141,7 +152,7 @@ extension EntitlementInfos {
             }
         )
 
-        self.init(entitlements: allEntitlements, verification: verification)
+        self.init(entitlements: allEntitlements, verification: verification, verificationReason: verificationReason)
     }
 
 }

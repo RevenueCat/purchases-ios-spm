@@ -22,7 +22,7 @@ extension HTTPResponse where Body == Data? {
         publicKey: Signing.PublicKey?,
         customPublicKey: Signing.PublicKey?
     ) -> VerifiedHTTPResponse<Body> {
-        let verificationResult = Self.verificationResult(
+        let (verificationResult, verificationReason) = Self.verificationResult(
             body: self.body,
             statusCode: self.httpStatusCode,
             requestHeaders: requestHeaders,
@@ -45,7 +45,7 @@ extension HTTPResponse where Body == Data? {
         }
         #endif
 
-        return self.verified(with: verificationResult)
+        return self.verified(with: verificationResult, verificationReason: verificationReason)
     }
 
     // swiftlint:disable:next function_parameter_count
@@ -59,7 +59,7 @@ extension HTTPResponse where Body == Data? {
         publicKey: Signing.PublicKey?,
         customPublicKey: Signing.PublicKey?,
         signing: SigningType
-    ) -> VerificationResult {
+    ) -> (result: VerificationResult, reason: VerificationReason?) {
         var signatureHeaderName: String = HTTPClient.ResponseHeader.signature.rawValue
         if let preferredSignatureHeaderName = HTTPResponse.value(forCaseInsensitiveHeaderField: .signatureHeaderName, in: responseHeaders) {
             signatureHeaderName = preferredSignatureHeaderName
@@ -73,7 +73,7 @@ extension HTTPResponse where Body == Data? {
         }
         
         guard let publicKey = publicKeyToUse, statusCode.isSuccessfulResponse else {
-            return .notRequested
+            return (result: .notRequested, reason: nil)
         }
 
         guard let signature = HTTPResponse.value(
@@ -82,19 +82,19 @@ extension HTTPResponse where Body == Data? {
         ) else {
             if request.path.supportsSignatureVerification {
                 Logger.warn(Strings.signing.signature_was_requested_but_not_provided(request))
-                return .failed
+                return (result: .failed, reason: .signatureRequestedButNotProvided(request.path.name))
             } else {
-                return .notRequested
+                return (result: .notRequested, reason: nil)
             }
         }
 
         guard let requestDate = requestDate else {
             Logger.warn(Strings.signing.request_date_missing_from_headers(request))
 
-            return .failed
+            return (result: .failed, reason: .requestDateMissingFromHeaders(request.path.name))
         }
 
-        if signing.verify(signature: signature,
+        let reason = signing.verify(signature: signature,
                           with: .init(
                             path: request.path,
                             message: body,
@@ -104,10 +104,11 @@ extension HTTPResponse where Body == Data? {
                             etag: HTTPResponse.value(forCaseInsensitiveHeaderField: .eTag, in: responseHeaders),
                             requestDate: requestDate.millisecondsSince1970
                           ),
-                          publicKey: publicKey) {
-            return .verified
+                          publicKey: publicKey)
+        if let reason {
+            return (result: .failed, reason: reason)
         } else {
-            return .failed
+            return (result: .verified, reason: nil)
         }
     }
 

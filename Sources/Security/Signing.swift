@@ -21,7 +21,7 @@ protocol SigningType {
         signature: String,
         with parameters: Signing.SignatureParameters,
         publicKey: Signing.PublicKey
-    ) -> Bool
+    ) -> VerificationReason?
 
 }
 
@@ -87,24 +87,23 @@ final class Signing: SigningType {
         signature: String,
         with parameters: SignatureParameters,
         publicKey: Signing.PublicKey
-    ) -> Bool {
+    ) -> VerificationReason? {
         guard let signature = Data(base64Encoded: signature) else {
             Logger.warn(Strings.signing.signature_not_base64(signature))
-            return false
+            return .signatureNotBase64(signature)
         }
 
         guard signature.count == SignatureComponent.totalSize else {
             Logger.warn(Strings.signing.signature_invalid_size(signature))
-            return false
+            return .signatureInvalidSize(signature.asString)
         }
 
-        guard let intermediatePublicKey = Self.extractAndVerifyIntermediateKey(
+        let (intermediatePublicKey, reason) = Self.extractAndVerifyIntermediateKey(
             from: signature,
             publicKey: publicKey,
             clock: self.clock
-        ) else {
-            return false
-        }
+        )
+        guard let intermediatePublicKey else { return reason }
 
         let salt = signature.component(.salt)
         let payload = signature.component(.payload)
@@ -129,7 +128,7 @@ final class Signing: SigningType {
             Logger.warn(Strings.signing.signature_failed_verification)
         }
 
-        return isValid
+        return isValid ? nil : .signatureFailedVerification
     }
 
     static func verificationMode(
@@ -347,7 +346,7 @@ private extension Signing {
         from signature: Data,
         publicKey: Signing.PublicKey,
         clock: ClockType
-    ) -> Signing.PublicKey? {
+    ) -> (publicKey: Signing.PublicKey?, reason: VerificationReason?) {
         let intermediatePublicKey = signature.component(.intermediatePublicKey)
         let intermediateKeyExpiration = signature.component(.intermediateKeyExpiration)
         let intermediateKeySignature = signature.component(.intermediateKeySignature)
@@ -355,22 +354,22 @@ private extension Signing {
         guard publicKey.isValidSignature(intermediateKeySignature,
                                          for: intermediateKeyExpiration + intermediatePublicKey) else {
             Logger.warn(Strings.signing.intermediate_key_failed_verification(signature: intermediateKeySignature))
-            return nil
+            return (publicKey: nil, reason: .intermediateKeyFailedVerification(intermediateKeySignature.asString))
         }
 
-        guard let expirationDate = Self.extractAndVerifyIntermediateKeyExpiration(intermediateKeyExpiration,
-                                                                                  clock) else {
-            return nil
+        let (expirationDate, reason) = Self.extractAndVerifyIntermediateKeyExpiration(intermediateKeyExpiration, clock)
+        guard let expirationDate else {
+            return (publicKey: nil, reason: reason)
         }
 
         Logger.verbose(Strings.signing.intermediate_key_creating(expiration: expirationDate,
                                                                  data: intermediatePublicKey))
 
         do {
-            return try Self.createPublicKey(with: intermediatePublicKey)
+            return (publicKey: try Self.createPublicKey(with: intermediatePublicKey), reason: nil)
         } catch {
             Logger.error(Strings.signing.intermediate_key_failed_creation(error))
-            return nil
+            return (publicKey: nil, reason: .intermediateKeyFailedCreation(error.localizedDescription))
         }
     }
 
@@ -378,21 +377,21 @@ private extension Signing {
     private static func extractAndVerifyIntermediateKeyExpiration(
         _ expirationData: Data,
         _ clock: ClockType
-    ) -> Date? {
+    ) -> (date: Date?, reason: VerificationReason?) {
         let daysSince1970 = UInt32(littleEndian32Bits: expirationData)
 
         guard daysSince1970 > 0 else {
             Logger.warn(Strings.signing.intermediate_key_invalid(expirationData))
-            return nil
+            return (date: nil, reason: .intermediateKeyInvalid(expirationData.asString))
         }
 
         let expirationDate = Date(daysSince1970: daysSince1970)
         guard expirationDate.timeIntervalSince(clock.now) >= 0 else {
             Logger.warn(Strings.signing.intermediate_key_expired(expirationDate, expirationData))
-            return nil
+            return (date: nil, reason: .intermediateKeyExpired("\(expirationDate)", expirationData.asString))
         }
 
-        return expirationDate
+        return (date: expirationDate, reason: nil)
     }
 
 }

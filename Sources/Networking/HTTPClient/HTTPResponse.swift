@@ -70,10 +70,12 @@ struct VerifiedHTTPResponse<Body: HTTPResponseBody>: HTTPResponseType {
 
     var response: HTTPResponse<Body>
     var verificationResult: VerificationResult
+    var verificationReason: VerificationReason?
 
-    init(response: HTTPResponse<Body>, verificationResult: VerificationResult) {
+    init(response: HTTPResponse<Body>, verificationResult: VerificationResult, verificationReason: VerificationReason?) {
         self.response = response
         self.verificationResult = verificationResult
+        self.verificationReason = verificationReason
     }
 
     init(
@@ -81,7 +83,8 @@ struct VerifiedHTTPResponse<Body: HTTPResponseBody>: HTTPResponseType {
         responseHeaders: HTTPClient.ResponseHeaders,
         body: Body,
         requestDate: Date? = nil,
-        verificationResult: VerificationResult
+        verificationResult: VerificationResult,
+        verificationReason: VerificationReason?
     ) {
         self.init(
             response: .init(
@@ -90,7 +93,8 @@ struct VerifiedHTTPResponse<Body: HTTPResponseBody>: HTTPResponseType {
                 body: body,
                 requestDate: requestDate
             ),
-            verificationResult: verificationResult
+            verificationResult: verificationResult,
+            verificationReason: verificationReason
         )
     }
 
@@ -180,10 +184,11 @@ extension HTTPResponse {
                      requestDate: self.requestDate)
     }
 
-    func verified(with verificationResult: VerificationResult) -> VerifiedHTTPResponse<Body> {
+    func verified(with verificationResult: VerificationResult, verificationReason: VerificationReason?) -> VerifiedHTTPResponse<Body> {
         return .init(
             response: self,
-            verificationResult: verificationResult
+            verificationResult: verificationResult,
+            verificationReason: verificationReason
         )
     }
 
@@ -226,7 +231,8 @@ extension VerifiedHTTPResponse {
     func mapBody<NewBody>(_ mapping: (Body) throws -> NewBody) rethrows -> VerifiedHTTPResponse<NewBody> {
         return .init(
             response: try self.response.mapBody(mapping),
-            verificationResult: self.verificationResult
+            verificationResult: self.verificationResult,
+            verificationReason: self.verificationReason
         )
     }
 

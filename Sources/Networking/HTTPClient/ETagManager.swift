@@ -95,7 +95,8 @@ class ETagManager {
                 self.storeIfPossible(newResponse, for: request)
                 return newResponse.asResponse(withRequestDate: response.requestDate,
                                               headers: response.responseHeaders,
-                                              responseVerificationResult: response.verificationResult)
+                                              responseVerificationResult: response.verificationResult,
+                                              responseVerificationReason: response.verificationReason)
             }
             if retried {
                 Logger.warn(
@@ -254,7 +255,8 @@ extension ETagManager.Response {
     fileprivate func asResponse(
         withRequestDate requestDate: Date?,
         headers: HTTPClient.ResponseHeaders,
-        responseVerificationResult: VerificationResult
+        responseVerificationResult: VerificationResult,
+        responseVerificationReason: VerificationReason?
     ) -> VerifiedHTTPResponse<Data> {
         return HTTPResponse(
             httpStatusCode: self.statusCode,
@@ -263,7 +265,7 @@ extension ETagManager.Response {
             requestDate: requestDate,
             origin: .cache
         )
-        .verified(with: responseVerificationResult)
+        .verified(with: responseVerificationResult, verificationReason: responseVerificationReason)
     }
 
     fileprivate func withUpdatedValidationTime() -> Self {

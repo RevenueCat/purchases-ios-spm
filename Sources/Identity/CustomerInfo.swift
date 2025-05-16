@@ -180,9 +180,11 @@ public typealias ProductIdentifier = String
     /// Initializes a `CustomerInfo` with the underlying data in the current schema version
     convenience init(response: CustomerInfoResponse,
                      entitlementVerification: VerificationResult,
+                     entitlementVerificationReason: VerificationReason?,
                      sandboxEnvironmentDetector: SandboxEnvironmentDetector) {
         self.init(data: .init(response: response,
                               entitlementVerification: entitlementVerification,
+                              entitlementVerificationReason: entitlementVerificationReason,
                               schemaVersion: Self.currentSchemaVersion),
                   sandboxEnvironmentDetector: sandboxEnvironmentDetector)
     }
@@ -206,7 +208,8 @@ public typealias ProductIdentifier = String
             purchases: subscriber.allPurchasesByProductId,
             requestDate: response.requestDate,
             sandboxEnvironmentDetector: sandboxEnvironmentDetector,
-            verification: data.entitlementVerification
+            verification: data.entitlementVerification,
+            verificationReason: data.entitlementVerificationReason
         )
         self.nonSubscriptions = TransactionsFactory.nonSubscriptionTransactions(
             withSubscriptionsData: subscriber.nonSubscriptions
@@ -280,11 +283,12 @@ extension CustomerInfo {
 extension CustomerInfo {
 
     /// Creates a copy of this ``CustomerInfo`` modifying only the ``VerificationResult``.
-    func copy(with entitlementVerification: VerificationResult) -> Self {
+    func copy(with entitlementVerification: VerificationResult, entitlementVerificationReason: VerificationReason?) -> Self {
         guard entitlementVerification != self.data.entitlementVerification else { return self }
 
         var copy = self.data
         copy.entitlementVerification = entitlementVerification
+        copy.entitlementVerificationReason = entitlementVerificationReason
         return .init(data: copy)
     }
 
@@ -355,13 +359,16 @@ private extension CustomerInfo {
 
         var response: CustomerInfoResponse
         var entitlementVerification: VerificationResult
+        var entitlementVerificationReason: VerificationReason?
         var schemaVersion: String?
 
         init(response: CustomerInfoResponse,
              entitlementVerification: VerificationResult,
+             entitlementVerificationReason: VerificationReason?,
              schemaVersion: String?) {
             self.response = response
             self.entitlementVerification = entitlementVerification
+            self.entitlementVerificationReason = entitlementVerificationReason
             self.schemaVersion = schemaVersion
         }
 

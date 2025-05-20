@@ -124,11 +124,19 @@ final class Signing: SigningType {
 
         if isValid {
             Logger.verbose(Strings.signing.signature_passed_verification)
+            return nil
         } else {
             Logger.warn(Strings.signing.signature_failed_verification)
+            return .signatureFailedVerification(
+                Strings.signing.safe_verifying_signature(
+                    signature: signature,
+                    parameters: parameters,
+                    salt: salt,
+                    payload: payload,
+                    message: messageToVerify
+                ).description
+            )
         }
-
-        return isValid ? nil : .signatureFailedVerification
     }
 
     static func verificationMode(

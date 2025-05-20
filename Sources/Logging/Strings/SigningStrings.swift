@@ -36,6 +36,12 @@ enum SigningStrings {
     case signature_was_requested_but_not_provided(HTTPRequest)
 
     case request_date_missing_from_headers(HTTPRequest)
+    
+    case safe_verifying_signature(signature: Data,
+                                  parameters: Signing.SignatureParameters,
+                                  salt: Data,
+                                  payload: Data,
+                                  message: Data?)
 
     #if DEBUG
     case verifying_signature(signature: Data,
@@ -98,6 +104,21 @@ extension SigningStrings: LogMessage {
         case let .signature_was_requested_but_not_provided(request):
             return "Request to '\(request.path)' required a signature but none was provided. " +
             "This will be reported as a verification failure."
+            
+        case let .safe_verifying_signature(
+            signature,
+            parameters,
+            salt,
+            payload,
+            message
+        ):
+            return """
+            Verifying signature '\(signature.base64EncodedString())'
+            Parameters: \(parameters)
+            Salt: \(salt.base64EncodedString()),
+            Payload: \(payload.base64EncodedString()),
+            Message: \(message?.base64EncodedString() ?? "")
+            """
 
         #if DEBUG
         case let .invalid_signature_data(request, data, responseHeaders, statusCode):

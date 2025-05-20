@@ -5,7 +5,7 @@ public enum VerificationReason {
     case signatureRequestedButNotProvided(String)
     case signatureNotBase64(String)
     case signatureInvalidSize(String)
-    case signatureFailedVerification
+    case signatureFailedVerification(String)
     case intermediateKeyFailedVerification(String)
     case intermediateKeyFailedCreation(String)
     case intermediateKeyExpired(String, String)
@@ -51,9 +51,9 @@ public class VerificationReasonContainer: NSObject, @unchecked Sendable {
         case .signatureInvalidSize(let value):
             self.reasonType = .signatureInvalidSize
             self.details = "Signature '\(value)' does not have expected size (\(Signing.SignatureComponent.totalSize))"
-        case .signatureFailedVerification:
+        case .signatureFailedVerification(let value):
             self.reasonType = .signatureFailedVerification
-            self.details = "Signature failed verification"
+            self.details = "Signature failed verification. \(value)"
         case .intermediateKeyFailedVerification(let value):
             self.reasonType = .intermediateKeyFailedVerification
             self.details = "Intermediate key failed verification: \(value)"

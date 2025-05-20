@@ -24,7 +24,7 @@ final class FakeSigning: SigningType {
         with parameters: Signing.SignatureParameters,
         publicKey: Signing.PublicKey
     ) -> VerificationReason? {
-        return .signatureFailedVerification
+        return .signatureFailedVerification("")
     }
 
     static let `default`: FakeSigning = .init()

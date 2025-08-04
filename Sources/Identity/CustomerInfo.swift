@@ -46,6 +46,8 @@ public typealias ProductIdentifier = String
 
         return mostRecentDate
     }
+    
+    @objc public let subscriberMetadata: CustomerInfoMetadata?
 
     /**
      * Returns all the non-subscription purchases a user has made.
@@ -214,6 +216,7 @@ public typealias ProductIdentifier = String
         self.nonSubscriptions = TransactionsFactory.nonSubscriptionTransactions(
             withSubscriptionsData: subscriber.nonSubscriptions
         )
+        self.subscriberMetadata = .init(from: subscriber.uiConfigMapping)
         self.requestDate = response.requestDate
         self.firstSeen = subscriber.firstSeen
         self.originalAppUserId = subscriber.originalAppUserId

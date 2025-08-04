@@ -27,6 +27,10 @@ struct CustomerInfoResponse {
 }
 
 extension CustomerInfoResponse {
+    
+    struct UIConfig {
+        var paywall: String
+    }
 
     struct Subscriber {
 
@@ -42,7 +46,7 @@ extension CustomerInfoResponse {
         var nonSubscriptions: [String: [Transaction]]
         @DefaultDecodable.EmptyDictionary
         var entitlements: [String: Entitlement]
-
+        var uiConfigMapping: UIConfig?
     }
 
     struct Subscription {
@@ -107,6 +111,7 @@ extension CustomerInfoResponse {
 extension CustomerInfoResponse.Subscriber: Codable, Hashable {}
 extension CustomerInfoResponse.Subscription: Codable, Hashable {}
 extension CustomerInfoResponse.PurchasePaidPrice: Codable, Hashable {}
+extension CustomerInfoResponse.UIConfig: Codable, Hashable {}
 
 extension CustomerInfoResponse.Entitlement: Hashable {}
 extension CustomerInfoResponse.Entitlement: Encodable {}

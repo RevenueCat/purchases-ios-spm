@@ -25,11 +25,11 @@ class HTTPClient {
     let timeout: TimeInterval
     let apiKey: String
     let authHeaders: RequestHeaders
+    let jwtManager: JWTManager
 
     private let session: URLSession
     private let state: Atomic<State> = .init(.initial)
     private let eTagManager: ETagManager
-    private let jwtManager: JWTManager
     private let dnsChecker: DNSCheckerType.Type
     private let signing: SigningType
     private let diagnosticsTracker: DiagnosticsTrackerType?

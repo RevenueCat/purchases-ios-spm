@@ -1258,6 +1258,13 @@ public extension Purchases {
     }
 }
 
+// MARK: ISI JWT
+public extension Purchases {
+    func getJWTToken() async throws -> String {
+        return try await self.backend.getJWTToken(appUserID: self.appUserID)
+    }
+}
+
 // swiftlint:enable missing_docs
 
 // MARK: - Paywalls & Customer Center

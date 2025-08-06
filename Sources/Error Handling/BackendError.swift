@@ -29,6 +29,7 @@ enum BackendError: Error, Equatable {
     case invalidWebRedemptionToken
     case purchaseBelongsToOtherUser
     case expiredWebRedemptionToken(obfuscatedEmail: String)
+    case unableToRefreshJWT
 
 }
 
@@ -142,6 +143,10 @@ extension BackendError: PurchasesErrorConvertible {
                                            extraUserInfo: [
                                             .obfuscatedEmail: obfuscatedEmail
                                            ])
+        case .unableToRefreshJWT:
+            let code = BackendErrorCode.unableToRefreshJWT
+            return ErrorUtils.backendError(withBackendCode: code,
+                                           originalBackendErrorCode: code.rawValue)
 
         }
     }
@@ -182,7 +187,8 @@ extension BackendError {
              .unexpectedBackendResponse,
              .invalidWebRedemptionToken,
              .purchaseBelongsToOtherUser,
-             .expiredWebRedemptionToken:
+             .expiredWebRedemptionToken,
+             .unableToRefreshJWT:
             return nil
         }
     }
@@ -204,7 +210,8 @@ extension BackendError {
                 .missingCachedCustomerInfo,
                 .invalidWebRedemptionToken,
                 .purchaseBelongsToOtherUser,
-                .expiredWebRedemptionToken:
+                .expiredWebRedemptionToken,
+                .unableToRefreshJWT:
             return nil
 
         case let .unexpectedBackendResponse(error, _, _):

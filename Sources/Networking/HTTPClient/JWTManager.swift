@@ -120,5 +120,5 @@ extension JWTManager {
         return bundleID + ".\(suiteNameBase)"
     }
 
-    fileprivate static let jwtCookieHeaderName: String = "token"
+    fileprivate static let jwtCookieHeaderName: String = "x-isi-token"
 }

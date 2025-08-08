@@ -29,7 +29,7 @@ struct CustomerInfoResponse {
 extension CustomerInfoResponse {
     
     struct UIConfig {
-        var paywall: String
+        var paywall: String?
     }
 
     struct Subscriber {

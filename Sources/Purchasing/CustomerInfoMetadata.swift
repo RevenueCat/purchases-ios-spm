@@ -5,8 +5,8 @@ public final class CustomerInfoMetadata: NSObject {
     @objc public let paywallConfig: CustomerInfoPaywallConfig?
 
     init?(from uiConfigMapping: CustomerInfoResponse.UIConfig?) {
-        guard let uiConfigMapping else { return nil }
-        self.paywallConfig = .init(paywallId: uiConfigMapping.paywall)
+        guard let uiConfigMapping, let paywallId = uiConfigMapping.paywall else { return nil }
+        self.paywallConfig = .init(paywallId: paywallId)
     }
 }
 

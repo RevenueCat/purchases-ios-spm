@@ -300,6 +300,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
 
         let receiptFetcher = ReceiptFetcher(requestFetcher: fetcher, systemInfo: systemInfo)
         let eTagManager = ETagManager()
+        let jwtManager = JWTManager()
         let attributionTypeFactory = AttributionTypeFactory()
         let attributionFetcher = AttributionFetcher(attributionFactory: attributionTypeFactory, systemInfo: systemInfo)
         let userDefaults = userDefaults ?? UserDefaults.computeDefault()
@@ -329,6 +330,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
             systemInfo: systemInfo,
             httpClientTimeout: networkTimeout,
             eTagManager: eTagManager,
+            jwtManager: jwtManager,
             operationDispatcher: operationDispatcher,
             attributionFetcher: attributionFetcher,
             offlineCustomerInfoCreator: .createIfAvailable(
@@ -1253,6 +1255,13 @@ public extension Purchases {
 
     func redeemWebPurchase(_ webPurchaseRedemption: WebPurchaseRedemption) async -> WebPurchaseRedemptionResult {
         return await self.purchasesOrchestrator.redeemWebPurchase(webPurchaseRedemption)
+    }
+}
+
+// MARK: ISI JWT
+public extension Purchases {
+    func getJWTToken() async throws -> String {
+        return try await self.backend.getJWTToken(appUserID: self.appUserID)
     }
 }
 

@@ -22,6 +22,7 @@ class Backend {
     let internalAPI: InternalAPI
     let customerCenterConfig: CustomerCenterConfigAPI
     let redeemWebPurchaseAPI: RedeemWebPurchaseAPI
+    let jwtManager: JWTManager
 
     private let config: BackendConfiguration
 
@@ -30,6 +31,7 @@ class Backend {
         systemInfo: SystemInfo,
         httpClientTimeout: TimeInterval = Configuration.networkTimeoutDefault,
         eTagManager: ETagManager,
+        jwtManager: JWTManager,
         operationDispatcher: OperationDispatcher,
         attributionFetcher: AttributionFetcher,
         offlineCustomerInfoCreator: OfflineCustomerInfoCreator?,
@@ -39,6 +41,7 @@ class Backend {
         let httpClient = HTTPClient(apiKey: apiKey,
                                     systemInfo: systemInfo,
                                     eTagManager: eTagManager,
+                                    jwtManager: jwtManager,
                                     signing: Signing(apiKey: apiKey, clock: systemInfo.clock),
                                     diagnosticsTracker: diagnosticsTracker,
                                     requestTimeout: httpClientTimeout,
@@ -89,6 +92,7 @@ class Backend {
         self.internalAPI = internalAPI
         self.customerCenterConfig = customerCenterConfig
         self.redeemWebPurchaseAPI = redeemWebPurchaseAPI
+        self.jwtManager = backendConfig.httpClient.jwtManager
     }
 
     func clearHTTPClientCaches() {
@@ -143,6 +147,32 @@ class Backend {
         self.customer.post(subscriberAttributes: subscriberAttributes, appUserID: appUserID, completion: completion)
     }
 
+    func getJWTToken(appUserID: String) async throws -> String {
+        if let token = self.jwtManager.jwtToken() {
+            return token
+        }
+        
+        Logger.debug(JWTStrings.refreshing_jwt)
+
+        // Refresh
+        let _ = try await withUnsafeThrowingContinuation { continuation in
+            self.config.systemInfo.isApplicationBackgrounded { isAppBackgrounded in
+                self.getCustomerInfo(appUserID: appUserID, isAppBackgrounded: isAppBackgrounded) { result in
+                    continuation.resume(with: result)
+                }
+            }
+        }
+               
+        guard let token = self.jwtManager.jwtToken() else {
+            Logger.debug(JWTStrings.unable_to_refresh_jwt)
+
+            throw BackendError.unableToRefreshJWT
+        }
+        
+        Logger.debug(JWTStrings.jwt_refreshed)
+        
+        return token
+    }
 }
 
 extension Backend {

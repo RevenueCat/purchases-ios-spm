@@ -25,6 +25,7 @@ class HTTPClient {
     let timeout: TimeInterval
     let apiKey: String
     let authHeaders: RequestHeaders
+    let jwtManager: JWTManager
 
     private let session: URLSession
     private let state: Atomic<State> = .init(.initial)
@@ -45,6 +46,7 @@ class HTTPClient {
     init(apiKey: String,
          systemInfo: SystemInfo,
          eTagManager: ETagManager,
+         jwtManager: JWTManager,
          signing: SigningType,
          diagnosticsTracker: DiagnosticsTrackerType?,
          dnsChecker: DNSCheckerType.Type = DNSChecker.self,
@@ -57,11 +59,13 @@ class HTTPClient {
         config.timeoutIntervalForRequest = requestTimeout
         config.timeoutIntervalForResource = requestTimeout
         config.urlCache = nil // We implement our own caching with `ETagManager`.
+        config.httpCookieStorage = nil // We implement our cookie caching with `JWTManager`
         self.session = URLSession(configuration: config,
                                   delegate: RedirectLoggerSessionDelegate(),
                                   delegateQueue: nil)
         self.systemInfo = systemInfo
         self.eTagManager = eTagManager
+        self.jwtManager = jwtManager
         self.signing = signing
         self.diagnosticsTracker = diagnosticsTracker
         self.dnsChecker = dnsChecker
@@ -106,6 +110,7 @@ class HTTPClient {
 
     func clearCaches() {
         self.eTagManager.clearCaches()
+        self.jwtManager.clearCaches()
     }
 
     var signatureVerificationEnabled: Bool {
@@ -432,6 +437,7 @@ private extension HTTPClient {
                 data: Data?,
                 error networkError: Error?,
                 requestStartTime: Date) {
+        
         RCTestAssertNotMainThread()
 
         let response = self.parse(
@@ -479,6 +485,9 @@ private extension HTTPClient {
             }
 
             if !requestRetryScheduled {
+                if let urlResponse = urlResponse {
+                    jwtManager.store(from: urlResponse)
+                }
                 request.completionHandler?(response)
             }
         } else {
@@ -561,9 +570,12 @@ private extension HTTPClient {
                 withSignatureVerification: request.verificationMode.isEnabled,
                 refreshETag: request.retried
             )
-            return request.headers.merging(eTagHeader)
+            return request.headers
+                .merging(eTagHeader)
+                .merging(jwtManager.jwtHeader())
         } else {
             return request.headers
+                .merging(jwtManager.jwtHeader())
         }
     }
 

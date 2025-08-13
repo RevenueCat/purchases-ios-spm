@@ -50,6 +50,7 @@ enum BackendErrorCode: Int, Error {
     case invalidWebRedemptionToken = 7849
     case purchaseBelongsToOtherUser = 7852
     case expiredWebRedemptionToken = 7853
+    case unableToRefreshJWT = 6000
 
     /**
      * - Parameter code: Generally comes from the backend in json. This may be a String, or an Int, or nothing.
@@ -137,6 +138,8 @@ extension BackendErrorCode {
             return .purchaseBelongsToOtherUser
         case .expiredWebRedemptionToken:
             return .expiredWebPurchaseToken
+        case .unableToRefreshJWT:
+            return .unableToRefreshJWT
         case .unknownError:
             return .unknownError
         }

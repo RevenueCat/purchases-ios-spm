@@ -64,6 +64,7 @@ import Foundation
     @objc(RCInvalidWebPurchaseToken) case invalidWebPurchaseToken = 39
     @objc(RCPurchaseBelongsToOtherUser) case purchaseBelongsToOtherUser = 40
     @objc(RCExpiredWebPurchaseToken) case expiredWebPurchaseToken = 41
+    @objc(RCUnableToRefreshJWT) case unableToRefreshJWT = 1001
 
     // swiftlint:enable missing_docs
 

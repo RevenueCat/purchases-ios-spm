@@ -32,6 +32,7 @@ enum Strings {
     static let receipt = ReceiptStrings.self
     static let signing = SigningStrings.self
     static let storeKit = StoreKitStrings.self
+    static let jwt = JWTStrings.self
 
 }
 

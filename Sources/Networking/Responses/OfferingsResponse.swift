@@ -22,6 +22,7 @@ struct OfferingsResponse {
 
             let identifier: String
             let platformProductIdentifier: String
+            let planKey: String?
 
         }
 

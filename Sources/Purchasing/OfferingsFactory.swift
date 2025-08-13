@@ -112,7 +112,8 @@ private extension Package {
         self.init(identifier: package.identifier,
                   packageType: Package.packageType(from: package.identifier),
                   storeProduct: product,
-                  offeringIdentifier: offeringIdentifier)
+                  offeringIdentifier: offeringIdentifier,
+                  planKey: package.planKey)
     }
 
 }

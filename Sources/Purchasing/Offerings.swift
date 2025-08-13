@@ -158,7 +158,8 @@ private extension Offering {
             return Package(identifier: pkg.identifier,
                            packageType: pkg.packageType,
                            storeProduct: pkg.storeProduct,
-                           presentedOfferingContext: newContext
+                           presentedOfferingContext: newContext,
+                           planKey: pkg.planKey
             )
         }
 

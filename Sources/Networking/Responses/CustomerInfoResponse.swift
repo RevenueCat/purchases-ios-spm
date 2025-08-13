@@ -74,6 +74,7 @@ extension CustomerInfoResponse {
 
         /// Price paid for the subscription
         var price: PurchasePaidPrice?
+        var planKey: String?
     }
 
     struct PurchasePaidPrice {
@@ -98,6 +99,7 @@ extension CustomerInfoResponse {
         var expiresDate: Date?
         var productIdentifier: String
         var purchaseDate: Date?
+        var planKey: String?
 
         @IgnoreEncodable @IgnoreHashable
         var rawData: [String: Any]

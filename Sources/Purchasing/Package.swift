@@ -115,19 +115,26 @@ import Foundation
         return self.storeProduct.localizedIntroductoryPriceString
     }
 
+    /// A new thing we introduced here as a tag on entitlement and subscription, as initially we were using `apple_access` and `crossplatform_access` entitlements to distinguish between Premium subscription and XP-only subscription but it will be getting more complicated when we extend the tier which is backward compatible with the existing ones.
+    ///
+    /// See https://www.notion.so/goodnotes-team/Notes-on-new-user-profile-23bb740273d280c2906aead605407d90
+    @objc public let planKey: String?
+
     /// Initialize a ``Package``.
     @objc
     public convenience init(
         identifier: String,
         packageType: PackageType,
         storeProduct: StoreProduct,
-        offeringIdentifier: String
+        offeringIdentifier: String,
+        planKey: String?
     ) {
         self.init(
             identifier: identifier,
             packageType: packageType,
             storeProduct: storeProduct,
-            presentedOfferingContext: .init(offeringIdentifier: offeringIdentifier)
+            presentedOfferingContext: .init(offeringIdentifier: offeringIdentifier),
+            planKey: planKey
         )
     }
 
@@ -137,12 +144,14 @@ import Foundation
         identifier: String,
         packageType: PackageType,
         storeProduct: StoreProduct,
-        presentedOfferingContext: PresentedOfferingContext
+        presentedOfferingContext: PresentedOfferingContext,
+        planKey: String?
     ) {
         self.identifier = identifier
         self.packageType = packageType
         self.storeProduct = storeProduct
         self.presentedOfferingContext = presentedOfferingContext
+        self.planKey = planKey
 
         super.init()
     }
@@ -154,7 +163,8 @@ import Foundation
             self.identifier == other.identifier &&
             self.packageType == other.packageType &&
             self.storeProduct == other.storeProduct &&
-            self.presentedOfferingContext == other.presentedOfferingContext
+            self.presentedOfferingContext == other.presentedOfferingContext &&
+            self.planKey == other.planKey
         )
     }
 
@@ -164,6 +174,7 @@ import Foundation
         hasher.combine(self.packageType)
         hasher.combine(self.storeProduct)
         hasher.combine(self.presentedOfferingContext)
+        hasher.combine(self.planKey)
 
         return hasher.finalize()
     }

@@ -181,6 +181,18 @@ extension PeriodType: DefaultValueProvider {
     /// - ``VerificationResult``
     @objc public var verification: VerificationResult { self.contents.verification }
 
+    /// A new thing we introduced here as a tag on entitlement and subscription, as initially we were using `apple_access` and `crossplatform_access` entitlements to distinguish between Premium subscription and XP-only subscription but it will be getting more complicated when we extend the tier which is backward compatible with the existing ones.
+    ///
+    /// See https://www.notion.so/goodnotes-team/Notes-on-new-user-profile-23bb740273d280c2906aead605407d90
+    @objc public var planKey: String? { self.contents.planKey }
+    
+    /// For showing subscription status of downgrade plan that will be renewed into
+    ///
+    /// Used for a case when the subscription is pending to be changed, for example Pro → Essential (or other downgrade).
+    ///
+    /// When `pending_product_id` is not the same as current one, this is a upcoming subscription.
+    @objc public var pendingProductId: String? { self.contents.pendingProductId }
+    
     // Docs inherited from protocol
     // swiftlint:disable:next missing_docs
     @objc public let rawData: [String: Any]
@@ -204,7 +216,9 @@ extension PeriodType: DefaultValueProvider {
             unsubscribeDetectedAt=\(String(describing: self.unsubscribeDetectedAt)),
             billingIssueDetectedAt=\(String(describing: self.billingIssueDetectedAt)),
             ownershipType=\(self.ownershipType),
-            verification=\(self.contents.verification)
+            verification=\(self.contents.verification),
+            planKey=\(self.contents.planKey),
+            pendingProductId=\(String(describing: self.contents.pendingProductId))
             >
             """
     }
@@ -254,7 +268,9 @@ extension PeriodType: DefaultValueProvider {
             unsubscribeDetectedAt: subscription.unsubscribeDetectedAt,
             billingIssueDetectedAt: subscription.billingIssuesDetectedAt,
             ownershipType: subscription.ownershipType,
-            verification: verification
+            verification: verification,
+            planKey: subscription.planKey ?? entitlement.planKey,
+            pendingProductId: subscription.pendingProductId
         )
         self.sandboxEnvironmentDetector = sandboxEnvironmentDetector
 
@@ -341,6 +357,8 @@ private extension EntitlementInfo {
         let billingIssueDetectedAt: Date?
         let ownershipType: PurchaseOwnershipType
         let verification: VerificationResult
+        let planKey: String?
+        let pendingProductId: String?
 
     }
 

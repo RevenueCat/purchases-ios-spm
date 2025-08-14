@@ -75,6 +75,11 @@ import Foundation
     /// Paid price for the subscription
     @objc public let price: ProductPaidPrice?
 
+    /// A new thing we introduced here as a tag on entitlement and subscription, as initially we were using `apple_access` and `crossplatform_access` entitlements to distinguish between Premium subscription and XP-only subscription but it will be getting more complicated when we extend the tier which is backward compatible with the existing ones.
+    ///
+    /// See https://www.notion.so/goodnotes-team/Notes-on-new-user-profile-23bb740273d280c2906aead605407d90
+    @objc public let planKey: String?
+
     init(productIdentifier: String,
          purchaseDate: Date,
          originalPurchaseDate: Date?,
@@ -89,7 +94,8 @@ import Foundation
          refundedAt: Date?,
          storeTransactionId: String?,
          requestDate: Date,
-         price: ProductPaidPrice?) {
+         price: ProductPaidPrice?,
+         planKey: String?) {
         self.productIdentifier = productIdentifier
         self.purchaseDate = purchaseDate
         self.originalPurchaseDate = originalPurchaseDate
@@ -109,6 +115,7 @@ import Foundation
                                                                      unsubscribeDetectedAt: unsubscribeDetectedAt,
                                                                      billingIssueDetectedAt: billingIssuesDetectedAt)
         self.price = price
+        self.planKey = planKey
 
         super.init()
     }
@@ -129,7 +136,8 @@ import Foundation
             refundedAt: \(String(describing: refundedAt)),
             storeTransactionId: \(String(describing: storeTransactionId)),
             isActive: \(isActive),
-            willRenew: \(willRenew)
+            willRenew: \(willRenew),
+            planKey: \(String(describing: planKey))
         }
         """
     }

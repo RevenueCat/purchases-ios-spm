@@ -80,6 +80,13 @@ import Foundation
     /// See https://www.notion.so/goodnotes-team/Notes-on-new-user-profile-23bb740273d280c2906aead605407d90
     @objc public let planKey: String?
 
+    /// For showing subscription status of downgrade plan that will be renewed into
+    ///
+    /// Used for a case when the subscription is pending to be changed, for example Pro → Essential (or other downgrade).
+    ///
+    /// When `pending_product_id` is not the same as current one, this is a upcoming subscription.
+    @objc public let pendingProductId: String?
+
     init(productIdentifier: String,
          purchaseDate: Date,
          originalPurchaseDate: Date?,
@@ -95,7 +102,8 @@ import Foundation
          storeTransactionId: String?,
          requestDate: Date,
          price: ProductPaidPrice?,
-         planKey: String?) {
+         planKey: String?,
+         pendingProductId: String?) {
         self.productIdentifier = productIdentifier
         self.purchaseDate = purchaseDate
         self.originalPurchaseDate = originalPurchaseDate
@@ -116,6 +124,7 @@ import Foundation
                                                                      billingIssueDetectedAt: billingIssuesDetectedAt)
         self.price = price
         self.planKey = planKey
+        self.pendingProductId = pendingProductId
 
         super.init()
     }
@@ -137,7 +146,8 @@ import Foundation
             storeTransactionId: \(String(describing: storeTransactionId)),
             isActive: \(isActive),
             willRenew: \(willRenew),
-            planKey: \(String(describing: planKey))
+            planKey: \(String(describing: planKey)),
+            pendingProductId: \(String(describing: pendingProductId))
         }
         """
     }

@@ -79,6 +79,7 @@ extension CustomerInfoResponse {
         /// Price paid for the subscription
         var price: PurchasePaidPrice?
         var planKey: String?
+        var pendingProductId: String?
     }
 
     struct PurchasePaidPrice {

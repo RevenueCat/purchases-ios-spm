@@ -80,6 +80,7 @@ extension CustomerInfoResponse {
         var price: PurchasePaidPrice?
         var planKey: String?
         var pendingProductId: String?
+        var pendingProductPlanKey: String?
     }
 
     struct PurchasePaidPrice {

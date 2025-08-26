@@ -87,6 +87,9 @@ import Foundation
     /// When `pending_product_id` is not the same as current one, this is a upcoming subscription.
     @objc public let pendingProductId: String?
 
+    /// For showing the tier name of the pending product
+    @objc public let pendingProductPlanKey: String?
+
     init(productIdentifier: String,
          purchaseDate: Date,
          originalPurchaseDate: Date?,
@@ -103,7 +106,8 @@ import Foundation
          requestDate: Date,
          price: ProductPaidPrice?,
          planKey: String?,
-         pendingProductId: String?) {
+         pendingProductId: String?,
+         pendingProductPlanKey: String?) {
         self.productIdentifier = productIdentifier
         self.purchaseDate = purchaseDate
         self.originalPurchaseDate = originalPurchaseDate
@@ -125,6 +129,7 @@ import Foundation
         self.price = price
         self.planKey = planKey
         self.pendingProductId = pendingProductId
+        self.pendingProductPlanKey = pendingProductPlanKey
 
         super.init()
     }
@@ -148,6 +153,7 @@ import Foundation
             willRenew: \(willRenew),
             planKey: \(String(describing: planKey)),
             pendingProductId: \(String(describing: pendingProductId))
+            pendingProductPlanKey: \(String(describing: pendingProductPlanKey))
         }
         """
     }

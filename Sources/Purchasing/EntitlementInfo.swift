@@ -192,6 +192,9 @@ extension PeriodType: DefaultValueProvider {
     ///
     /// When `pending_product_id` is not the same as current one, this is a upcoming subscription.
     @objc public var pendingProductId: String? { self.contents.pendingProductId }
+
+    /// For showing the tier name of the pending product
+    @objc public var pendingProductPlanKey: String? { self.contents.pendingProductPlanKey }
     
     // Docs inherited from protocol
     // swiftlint:disable:next missing_docs
@@ -218,7 +221,8 @@ extension PeriodType: DefaultValueProvider {
             ownershipType=\(self.ownershipType),
             verification=\(self.contents.verification),
             planKey=\(self.contents.planKey),
-            pendingProductId=\(String(describing: self.contents.pendingProductId))
+            pendingProductId=\(String(describing: self.contents.pendingProductId)),
+            pendingProductPlanKey=\(String(describing: self.contents.pendingProductPlanKey))
             >
             """
     }
@@ -270,7 +274,8 @@ extension PeriodType: DefaultValueProvider {
             ownershipType: subscription.ownershipType,
             verification: verification,
             planKey: subscription.planKey ?? entitlement.planKey,
-            pendingProductId: subscription.pendingProductId
+            pendingProductId: subscription.pendingProductId,
+            pendingProductPlanKey: subscription.pendingProductPlanKey
         )
         self.sandboxEnvironmentDetector = sandboxEnvironmentDetector
 
@@ -359,6 +364,7 @@ private extension EntitlementInfo {
         let verification: VerificationResult
         let planKey: String?
         let pendingProductId: String?
+        let pendingProductPlanKey: String?
 
     }
 

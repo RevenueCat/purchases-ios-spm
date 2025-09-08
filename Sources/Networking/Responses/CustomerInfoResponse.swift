@@ -30,7 +30,6 @@ extension CustomerInfoResponse {
     
     struct UIConfig {
         var paywall: String?
-        var paywallWithOtp: String?
         var paywallPersonalProOnly: String?
         var paywallProOnly: String?
         var paywallAiPass: String?

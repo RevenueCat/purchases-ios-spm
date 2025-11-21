@@ -113,10 +113,8 @@ private struct ColorSchemeRemoteImage<Content: View>: View {
 
     // Preferred method of loading images
 
-    @StateObject
     private var highResFileLoader: FileImageLoader
 
-    @StateObject
     private var lowResFileLoader: FileImageLoader
 
     // Legacy method of loading images
@@ -190,11 +188,8 @@ private struct ColorSchemeRemoteImage<Content: View>: View {
             for: colorScheme
         )
 
-        let highResLoader = FileImageLoader(fileRepository: .shared, url: highResURL)
-        let lowResLoader = FileImageLoader(fileRepository: .shared, url: lowResURL)
-
-        self._highResFileLoader = .init(wrappedValue: highResLoader)
-        self._lowResFileLoader = .init(wrappedValue: lowResLoader)
+        self.highResFileLoader = FileImageLoader(fileRepository: .shared, url: highResURL)
+        self.lowResFileLoader = FileImageLoader(fileRepository: .shared, url: lowResURL)
     }
 
     private static func selectURL(

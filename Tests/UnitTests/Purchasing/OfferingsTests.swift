@@ -19,7 +19,7 @@ class OfferingsTests: TestCase {
 
     func testPackageIsNotCreatedIfNoValidProducts() {
         let package = self.offeringsFactory.createPackage(
-            with: .init(identifier: "$rc_monthly", platformProductIdentifier: "com.myproduct.monthly"),
+            with: .init(identifier: "$rc_monthly", platformProductIdentifier: "com.myproduct.monthly", planKey: nil),
             productsByID: [
                 "com.myproduct.annual": StoreProduct(sk1Product: SK1Product())
             ],
@@ -35,7 +35,7 @@ class OfferingsTests: TestCase {
         let packageIdentifier = "$rc_monthly"
         let package = try XCTUnwrap(
             self.offeringsFactory.createPackage(
-                with: .init(identifier: packageIdentifier, platformProductIdentifier: productIdentifier),
+                with: .init(identifier: packageIdentifier, platformProductIdentifier: productIdentifier, planKey: nil),
                 productsByID: [
                     productIdentifier: StoreProduct(sk1Product: product)
                 ],
@@ -58,8 +58,8 @@ class OfferingsTests: TestCase {
                 identifier: "offering_a",
                 description: "This is the base offering",
                 packages: [
-                    .init(identifier: "$rc_monthly", platformProductIdentifier: "com.myproduct.monthly"),
-                    .init(identifier: "$rc_annual", platformProductIdentifier: "com.myproduct.annual")
+                    .init(identifier: "$rc_monthly", platformProductIdentifier: "com.myproduct.monthly", planKey: nil),
+                    .init(identifier: "$rc_annual", platformProductIdentifier: "com.myproduct.annual", planKey: nil)
                 ]),
             uiConfig: nil
         )
@@ -83,9 +83,9 @@ class OfferingsTests: TestCase {
                     identifier: offeringIdentifier,
                     description: serverDescription,
                     packages: [
-                        .init(identifier: "$rc_monthly", platformProductIdentifier: "com.myproduct.monthly"),
-                        .init(identifier: "$rc_annual", platformProductIdentifier: "com.myproduct.annual"),
-                        .init(identifier: "$rc_six_month", platformProductIdentifier: "com.myproduct.sixMonth")
+                        .init(identifier: "$rc_monthly", platformProductIdentifier: "com.myproduct.monthly", planKey: nil),
+                        .init(identifier: "$rc_annual", platformProductIdentifier: "com.myproduct.annual", planKey: nil),
+                        .init(identifier: "$rc_six_month", platformProductIdentifier: "com.myproduct.sixMonth", planKey: nil)
                     ]),
                 uiConfig: nil
             )
@@ -108,12 +108,12 @@ class OfferingsTests: TestCase {
                     .init(identifier: "offering_a",
                           description: "This is the base offering",
                           packages: [
-                            .init(identifier: "$rc_six_month", platformProductIdentifier: "com.myproduct.sixMonth")
+                            .init(identifier: "$rc_six_month", platformProductIdentifier: "com.myproduct.sixMonth", planKey: nil)
                           ]),
                     .init(identifier: "offering_b",
                           description: "This is the base offering b",
                           packages: [
-                            .init(identifier: "$rc_monthly", platformProductIdentifier: "com.myproduct.monthly")
+                            .init(identifier: "$rc_monthly", platformProductIdentifier: "com.myproduct.monthly", planKey: nil)
                           ])
                 ],
                 placements: nil,
@@ -143,13 +143,13 @@ class OfferingsTests: TestCase {
                         .init(identifier: "offering_a",
                               description: "This is the base offering",
                               packages: [
-                                .init(identifier: "$rc_six_month", platformProductIdentifier: "com.myproduct.annual")
+                                .init(identifier: "$rc_six_month", platformProductIdentifier: "com.myproduct.annual", planKey: nil)
                               ]),
                         .init(identifier: "offering_b",
                               description: "This is the base offering b",
                               packages: [
-                                .init(identifier: "$rc_monthly", platformProductIdentifier: "com.myproduct.monthly"),
-                                .init(identifier: "custom_package", platformProductIdentifier: "com.myproduct.custom")
+                                .init(identifier: "$rc_monthly", platformProductIdentifier: "com.myproduct.monthly", planKey: nil),
+                                .init(identifier: "custom_package", platformProductIdentifier: "com.myproduct.custom", planKey: nil)
                               ])
                     ],
                     placements: nil,
@@ -191,19 +191,19 @@ class OfferingsTests: TestCase {
                         .init(identifier: "offering_a",
                               description: "This is the base offering",
                               packages: [
-                                .init(identifier: "$rc_six_month", platformProductIdentifier: "com.myproduct.annual")
+                                .init(identifier: "$rc_six_month", platformProductIdentifier: "com.myproduct.annual", planKey: nil)
                               ]),
                         .init(identifier: "offering_b",
                               description: "This is the base offering b",
                               packages: [
-                                .init(identifier: "$rc_monthly", platformProductIdentifier: "com.myproduct.monthly"),
-                                .init(identifier: "custom_package", platformProductIdentifier: "com.myproduct.custom")
+                                .init(identifier: "$rc_monthly", platformProductIdentifier: "com.myproduct.monthly", planKey: nil),
+                                .init(identifier: "custom_package", platformProductIdentifier: "com.myproduct.custom", planKey: nil)
                               ]),
                         .init(identifier: "offering_c",
                               description: "This is the base offering b",
                               packages: [
-                                .init(identifier: "$rc_monthly", platformProductIdentifier: "com.myproduct.monthly"),
-                                .init(identifier: "custom_package", platformProductIdentifier: "com.myproduct.custom")
+                                .init(identifier: "$rc_monthly", platformProductIdentifier: "com.myproduct.monthly", planKey: nil),
+                                .init(identifier: "custom_package", platformProductIdentifier: "com.myproduct.custom", planKey: nil)
                               ])
                     ],
                     placements: .init(fallbackOfferingId: "offering_c",
@@ -270,13 +270,13 @@ class OfferingsTests: TestCase {
                         .init(identifier: "offering_a",
                               description: "This is the base offering",
                               packages: [
-                                .init(identifier: "$rc_six_month", platformProductIdentifier: "com.myproduct.annual")
+                                .init(identifier: "$rc_six_month", platformProductIdentifier: "com.myproduct.annual", planKey: nil)
                               ]),
                         .init(identifier: "offering_b",
                               description: "This is the base offering b",
                               packages: [
-                                .init(identifier: "$rc_monthly", platformProductIdentifier: "com.myproduct.monthly"),
-                                .init(identifier: "custom_package", platformProductIdentifier: "com.myproduct.custom")
+                                .init(identifier: "$rc_monthly", platformProductIdentifier: "com.myproduct.monthly", planKey: nil),
+                                .init(identifier: "custom_package", platformProductIdentifier: "com.myproduct.custom", planKey: nil)
                               ])
                     ],
                     placements: .init(fallbackOfferingId: nil,
@@ -316,7 +316,7 @@ class OfferingsTests: TestCase {
                         .init(identifier: "offering_a",
                               description: "This is the base offering",
                               packages: [
-                                .init(identifier: "$rc_six_month", platformProductIdentifier: "com.myproduct.annual")
+                                .init(identifier: "$rc_six_month", platformProductIdentifier: "com.myproduct.annual", planKey: nil)
                               ])
                     ],
                     placements: nil,
@@ -381,7 +381,7 @@ class OfferingsTests: TestCase {
                         .init(identifier: "offering_a",
                               description: "This is the base offering",
                               packages: [
-                                .init(identifier: "$rc_six_month", platformProductIdentifier: "com.myproduct.annual")
+                                .init(identifier: "$rc_six_month", platformProductIdentifier: "com.myproduct.annual", planKey: nil)
                               ],
                               metadata: .init(
                                 wrappedValue: metadata
@@ -389,7 +389,7 @@ class OfferingsTests: TestCase {
                         .init(identifier: "offering_b",
                               description: "This is the base offering b",
                               packages: [
-                                .init(identifier: "$rc_monthly", platformProductIdentifier: "com.myproduct.monthly")
+                                .init(identifier: "$rc_monthly", platformProductIdentifier: "com.myproduct.monthly", planKey: nil)
                               ])
                     ],
                     placements: nil,
@@ -528,7 +528,7 @@ class OfferingsTests: TestCase {
                 .init(identifier: "offering_a",
                       description: "This is the base offering",
                       packages: [
-                        .init(identifier: "$rc_six_month", platformProductIdentifier: "com.myproduct.annual")
+                        .init(identifier: "$rc_six_month", platformProductIdentifier: "com.myproduct.annual", planKey: nil)
                       ])
             ],
             placements: nil,
@@ -570,7 +570,7 @@ private extension OfferingsTests {
                         .init(identifier: "offering_a",
                               description: "This is the base offering",
                               packages: [
-                                .init(identifier: identifier, platformProductIdentifier: productIdentifier)
+                                .init(identifier: identifier, platformProductIdentifier: productIdentifier, planKey: nil)
                               ])
                     ],
                     placements: nil,

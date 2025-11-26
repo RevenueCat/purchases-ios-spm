@@ -69,6 +69,7 @@ class BaseHTTPClientTests<ETag: ETagManager>: TestCase {
         return HTTPClient(apiKey: self.apiKey,
                           systemInfo: systemInfo,
                           eTagManager: self.eTagManager,
+                          jwtManager: JWTManager(),
                           signing: self.signing,
                           diagnosticsTracker: self.diagnosticsTracker,
                           dnsChecker: MockDNSChecker.self,
@@ -1284,7 +1285,8 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager> {
             httpStatusCode: .success,
             responseHeaders: headers,
             body: mockedCachedResponse,
-            verificationResult: .verified
+            verificationResult: .verified,
+            verificationReason: nil
         )
 
         stub(condition: isPath(path)) { response in
@@ -1526,7 +1528,8 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager> {
             responseHeaders: [:],
             body: encodedResponse,
             requestDate: requestDate,
-            verificationResult: .notRequested
+            verificationResult: .notRequested,
+            verificationReason: nil
         )
 
         stub(condition: isPath(path)) { _ in

@@ -22,20 +22,20 @@ final class MockSigning: SigningType {
     }
 
     var requests: [VerificationRequest] = []
-    var stubbedVerificationResult: Bool?
+    var stubbedVerificationResult: RevenueCat.VerificationReason?
 
     func verify(
         signature: String,
         with parameters: Signing.SignatureParameters,
         publicKey: Signing.PublicKey
-    ) -> Bool {
+    ) -> RevenueCat.VerificationReason? {
         self.requests.append(.init(
             signature: signature,
             parameters: parameters,
             publicKey: publicKey
         ))
 
-        return self.stubbedVerificationResult!
+        return self.stubbedVerificationResult
     }
 
 }

@@ -93,7 +93,7 @@ final class SignatureVerificationHTTPClientTests: BaseSignatureVerificationHTTPC
         self.changeClient(.informational)
         self.mockResponse()
 
-        self.signing.stubbedVerificationResult = true
+        self.signing.stubbedVerificationResult = nil
 
         let request: HTTPRequest = .createWithResponseVerification(method: .get, path: Self.path)
         let response: DataResponse? = waitUntilValue { completion in
@@ -121,7 +121,7 @@ final class SignatureVerificationHTTPClientTests: BaseSignatureVerificationHTTPC
                           signature: nil,
                           requestDate: nil)
 
-        self.signing.stubbedVerificationResult = true
+        self.signing.stubbedVerificationResult = nil
 
         let request: HTTPRequest = .init(method: .get, path: path)
         let response: DataResponse? = waitUntilValue { completion in
@@ -150,7 +150,7 @@ final class SignatureVerificationHTTPClientTests: BaseSignatureVerificationHTTPC
                          ])
         }
 
-        self.signing.stubbedVerificationResult = true
+        self.signing.stubbedVerificationResult = nil
 
         let request: HTTPRequest = .createWithResponseVerification(method: .get, path: Self.path)
 
@@ -320,7 +320,7 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
         self.mockResponse(signature: Self.sampleSignature,
                           requestDate: Self.date2,
                           body: body)
-        self.signing.stubbedVerificationResult = true
+        self.signing.stubbedVerificationResult = nil
 
         let request: HTTPRequest = .createWithResponseVerification(method: .get, path: Self.path)
 
@@ -344,7 +344,7 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
     func testPerformRequestOverridesVerificationMode() throws {
         self.mockPath(statusCode: .success, requestDate: Self.date1)
 
-        self.signing.stubbedVerificationResult = false
+        self.signing.stubbedVerificationResult = .invalidPublicKey("invalid public key")
 
         let response: DataResponse? = waitUntilValue { completion in
             self.client.perform(.createWithResponseVerification(method: .get, path: .logIn),
@@ -370,7 +370,7 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
             )
         )
 
-        self.signing.stubbedVerificationResult = true
+        self.signing.stubbedVerificationResult = nil
 
         let request: HTTPRequest = .createWithResponseVerification(method: .get, path: Self.path)
 
@@ -404,7 +404,7 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
             statusCode: .success
         )
 
-        self.signing.stubbedVerificationResult = true
+        self.signing.stubbedVerificationResult = nil
 
         let request: HTTPRequest = .createWithResponseVerification(method: .post(requestBody),
                                                                    path: Self.path)
@@ -442,7 +442,7 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
             statusCode: .success
         )
 
-        self.signing.stubbedVerificationResult = true
+        self.signing.stubbedVerificationResult = nil
 
         let request: HTTPRequest = .createWithResponseVerification(method: .post(requestBody),
                                                                    path: Self.path)
@@ -464,7 +464,7 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
     func testIncorrectSignatureReturnsResponse() throws {
         self.mockPath(statusCode: .success, requestDate: Self.date1)
 
-        self.signing.stubbedVerificationResult = false
+        self.signing.stubbedVerificationResult = .signatureFailedVerification("signature failed verification")
 
         let response: DataResponse? = waitUntilValue { completion in
             self.client.perform(.createWithResponseVerification(method: .get, path: Self.path),
@@ -479,7 +479,7 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
     func testIncorrectSignatureLogsError() throws {
         let request: HTTPRequest = .createWithResponseVerification(method: .get, path: Self.path)
         self.mockPath(request.path, statusCode: .success, requestDate: Self.date1)
-        self.signing.stubbedVerificationResult = false
+        self.signing.stubbedVerificationResult = .signatureFailedVerification("signature failed verification")
 
         let _: DataResponse? = waitUntilValue { completion in
             self.client.perform(request, completionHandler: completion)
@@ -493,7 +493,7 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
     }
 
     func testIgnoresResponseFromETagManagerIfItHadNotBeenVerified() throws {
-        self.signing.stubbedVerificationResult = true
+        self.signing.stubbedVerificationResult = nil
 
         self.mockPath(
             statusCode: .success,
@@ -532,7 +532,7 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
                 verificationResult: .verified
             )
         )
-        self.signing.stubbedVerificationResult = false
+        self.signing.stubbedVerificationResult = .signatureFailedVerification("signature failed verification")
 
         let response: BodyWithDateResponse? = waitUntilValue { completion in
             self.client.perform(.createWithResponseVerification(method: .get, path: Self.path),
@@ -560,7 +560,7 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
             )
         )
 
-        self.signing.stubbedVerificationResult = true
+        self.signing.stubbedVerificationResult = nil
 
         let response: BodyWithDateResponse? = waitUntilValue { completion in
             self.client.perform(.createWithResponseVerification(method: .get, path: Self.path),
@@ -588,7 +588,7 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
             )
         )
 
-        self.signing.stubbedVerificationResult = false
+        self.signing.stubbedVerificationResult = .signatureFailedVerification("signature failed verification")
 
         let response: BodyWithDateResponse? = waitUntilValue { completion in
             self.client.perform(.createWithResponseVerification(method: .get, path: Self.path),
@@ -604,7 +604,7 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
     func testCachedResponseUpdatesRequestDateIfNewResponseIsVerified() throws {
         let cachedResponse = BodyWithDate(data: "test", requestDate: Self.date1)
 
-        self.signing.stubbedVerificationResult = true
+        self.signing.stubbedVerificationResult = nil
 
         self.mockPath(
             statusCode: .notModified,
@@ -643,7 +643,7 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
             )
         )
 
-        self.signing.stubbedVerificationResult = false
+        self.signing.stubbedVerificationResult = .signatureFailedVerification("signature failed verification")
 
         let response: BodyWithDateResponse? = waitUntilValue { completion in
             self.client.perform(.init(method: .get, path: Self.path),
@@ -674,7 +674,7 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
 
     func testNoCachedResponseAndVerifiedResponse() throws {
         self.mockPath(statusCode: .success, requestDate: Self.date2)
-        self.signing.stubbedVerificationResult = true
+        self.signing.stubbedVerificationResult = nil
 
         let response: DataResponse? = waitUntilValue { completion in
             self.client.perform(.init(method: .get, path: Self.path),
@@ -705,7 +705,7 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
             )
         )
 
-        self.signing.stubbedVerificationResult = false
+        self.signing.stubbedVerificationResult = .signatureFailedVerification("signature failed verification")
 
         let response: BodyWithDateResponse? = waitUntilValue { completion in
             self.client.perform(.init(method: .get, path: Self.path),
@@ -731,7 +731,7 @@ final class EnforcedSignatureVerificationHTTPClientTests: BaseSignatureVerificat
     func testValidSignature() {
         self.mockResponse(signature: Self.sampleSignature, requestDate: Self.date1)
 
-        self.signing.stubbedVerificationResult = true
+        self.signing.stubbedVerificationResult = nil
 
         let response: DataResponse? = waitUntilValue { completion in
             self.client.perform(.createWithResponseVerification(method: .get, path: Self.path),
@@ -746,7 +746,7 @@ final class EnforcedSignatureVerificationHTTPClientTests: BaseSignatureVerificat
     func testIncorrectSignatureReturnsError() {
         self.mockResponse(signature: Self.sampleSignature, requestDate: Self.date1)
 
-        self.signing.stubbedVerificationResult = false
+        self.signing.stubbedVerificationResult = .signatureFailedVerification("signature failed verification")
 
         let response: DataResponse? = waitUntilValue { completion in
             self.client.perform(.createWithResponseVerification(method: .get, path: Self.path),
@@ -761,7 +761,7 @@ final class EnforcedSignatureVerificationHTTPClientTests: BaseSignatureVerificat
     func testPerformRequestOverridesIt() {
         self.mockResponse(signature: Self.sampleSignature, requestDate: Self.date1)
 
-        self.signing.stubbedVerificationResult = false
+        self.signing.stubbedVerificationResult = .signatureFailedVerification("signature failed verification")
 
         let response: DataResponse? = waitUntilValue { completion in
             self.client.perform(.createWithResponseVerification(method: .get, path: .logIn),
@@ -777,7 +777,7 @@ final class EnforcedSignatureVerificationHTTPClientTests: BaseSignatureVerificat
     func testPerformRequestWithDisabledModeOverridesIt() {
         self.mockResponse(signature: Self.sampleSignature, requestDate: Self.date1)
 
-        self.signing.stubbedVerificationResult = false
+        self.signing.stubbedVerificationResult = .signatureFailedVerification("signature failed verification")
 
         let response: DataResponse? = waitUntilValue { completion in
             self.client.perform(.createWithResponseVerification(method: .get, path: Self.path),
@@ -790,7 +790,7 @@ final class EnforcedSignatureVerificationHTTPClientTests: BaseSignatureVerificat
 
     func testFakeSignatureFailuresInEnforcedMode() {
         self.mockResponse(signature: Self.sampleSignature, requestDate: Self.date1)
-        self.signing.stubbedVerificationResult = true
+        self.signing.stubbedVerificationResult = nil
 
         self.changeClientToEnforced(forceSignatureFailures: true)
 
@@ -804,7 +804,7 @@ final class EnforcedSignatureVerificationHTTPClientTests: BaseSignatureVerificat
 
     func testFakeSignatureFailuresInInformationalMode() {
         self.mockResponse(signature: Self.sampleSignature, requestDate: Self.date1)
-        self.signing.stubbedVerificationResult = true
+        self.signing.stubbedVerificationResult = nil
 
         self.changeClient(.informational, forceSignatureFailures: true)
 
@@ -818,7 +818,7 @@ final class EnforcedSignatureVerificationHTTPClientTests: BaseSignatureVerificat
 
     func testFakeSignatureFailuresWithDisabledVerification() {
         self.mockResponse(signature: Self.sampleSignature, requestDate: Self.date1)
-        self.signing.stubbedVerificationResult = true
+        self.signing.stubbedVerificationResult = nil
 
         self.changeClient(.disabled, forceSignatureFailures: true)
 

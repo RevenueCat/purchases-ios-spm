@@ -884,7 +884,7 @@ class BasicCustomerInfoTests: TestCase {
     }
 
     func testCopyWithSameVerificationResult() throws {
-        expect(self.customerInfo.copy(with: .notRequested)) === self.customerInfo
+        expect(self.customerInfo.copy(with: .notRequested, entitlementVerificationReason: nil)) === self.customerInfo
     }
 
     func testCopyWithVerificationResultVerified() throws {
@@ -898,7 +898,7 @@ class BasicCustomerInfoTests: TestCase {
     }
 
     func testCopyWithVerificationResultNotRequested() throws {
-        self.verifyCopy(of: self.customerInfo.copy(with: .verified),
+        self.verifyCopy(of: self.customerInfo.copy(with: .verified, entitlementVerificationReason: nil),
                         onlyModifiesEntitlementVerification: .notRequested)
     }
 
@@ -920,19 +920,19 @@ class BasicCustomerInfoTests: TestCase {
     }
 
     func testIsNotComputedOfflineIfVerificationNotRequested() {
-        expect(self.customerInfo.copy(with: .notRequested).isComputedOffline) == false
+        expect(self.customerInfo.copy(with: .notRequested, entitlementVerificationReason: nil).isComputedOffline) == false
     }
 
     func testIsNotComputedOfflineIfVerified() {
-        expect(self.customerInfo.copy(with: .verified).isComputedOffline) == false
+        expect(self.customerInfo.copy(with: .verified, entitlementVerificationReason: nil).isComputedOffline) == false
     }
 
     func testIsNotComputedOfflineIfFailedVerification() {
-        expect(self.customerInfo.copy(with: .failed).isComputedOffline) == false
+        expect(self.customerInfo.copy(with: .failed, entitlementVerificationReason: nil).isComputedOffline) == false
     }
 
     func testIsComputedOffline() throws {
-        expect(self.customerInfo.copy(with: .verifiedOnDevice).isComputedOffline) == true
+        expect(self.customerInfo.copy(with: .verifiedOnDevice, entitlementVerificationReason: nil).isComputedOffline) == true
     }
 
 }
@@ -967,12 +967,12 @@ private extension BasicCustomerInfoTests {
         of customerInfo: CustomerInfo,
         onlyModifiesEntitlementVerification newVerification: VerificationResult
     ) {
-        let copy = customerInfo.copy(with: newVerification)
+        let copy = customerInfo.copy(with: newVerification, entitlementVerificationReason: nil)
         expect(customerInfo) != copy
 
         expect(copy.entitlements.verification) == newVerification
 
-        let copyWithOriginalVerification = copy.copy(with: customerInfo.entitlements.verification)
+        let copyWithOriginalVerification = copy.copy(with: customerInfo.entitlements.verification, entitlementVerificationReason: nil)
         expect(copyWithOriginalVerification) == customerInfo
     }
 

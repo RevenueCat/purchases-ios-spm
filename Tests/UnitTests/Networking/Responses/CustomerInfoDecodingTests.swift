@@ -154,12 +154,12 @@ class CustomerInfoDecodingTests: BaseHTTPResponseTest {
     }
 
     func testEncodingWithVerifiedResponse() {
-        assertSnapshot(matching: self.customerInfo.copy(with: .verified),
+        assertSnapshot(matching: self.customerInfo.copy(with: .verified, entitlementVerificationReason: nil),
                        as: .backwardsCompatibleFormattedJson)
     }
 
     func testEncodingWithFailedVerificationResponse() {
-        assertSnapshot(matching: self.customerInfo.copy(with: .failed),
+        assertSnapshot(matching: self.customerInfo.copy(with: .failed, entitlementVerificationReason: nil),
                        as: .backwardsCompatibleFormattedJson)
     }
 
@@ -237,13 +237,13 @@ class CustomerInfoVersion2DecodingTests: BaseHTTPResponseTest {
     }
 
     func testVerificationIsEncoded() throws {
-        let reencoded = try self.customerInfo.copy(with: .verified).encodeAndDecode()
+        let reencoded = try self.customerInfo.copy(with: .verified, entitlementVerificationReason: nil).encodeAndDecode()
 
         expect(reencoded.entitlements.verification) == .verified
     }
 
     func testFailedVerificationIsEncoded() throws {
-        let reencoded = try self.customerInfo.copy(with: .failed).encodeAndDecode()
+        let reencoded = try self.customerInfo.copy(with: .failed, entitlementVerificationReason: nil).encodeAndDecode()
 
         expect(reencoded.entitlements.verification) == .failed
     }

@@ -422,6 +422,7 @@ class BackendSubscriberAttributesTests: TestCase {
         return MockHTTPClient(apiKey: Self.apiKey,
                               systemInfo: self.systemInfo,
                               eTagManager: self.mockETagManager,
+                              jwtManager: JWTManager(),
                               diagnosticsTracker: self.mockDiagnosticsTracker,
                               sourceTestFile: file)
     }

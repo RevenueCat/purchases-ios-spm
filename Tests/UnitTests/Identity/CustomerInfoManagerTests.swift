@@ -491,7 +491,7 @@ class CustomerInfoManagerTests: BaseCustomerInfoManagerTests {
 
     func testCachesCustomerInfoWithVerifiedEntitlements() {
         let appUserID = "myUser"
-        let info = self.mockCustomerInfo.copy(with: .verified)
+        let info = self.mockCustomerInfo.copy(with: .verified, entitlementVerificationReason: nil)
 
         self.customerInfoManager.cache(customerInfo: info, appUserID: appUserID)
 
@@ -501,7 +501,7 @@ class CustomerInfoManagerTests: BaseCustomerInfoManagerTests {
 
     func testCachesCustomerInfoWithEntitlementVerificationNotRequested() {
         let appUserID = "myUser"
-        let info = self.mockCustomerInfo.copy(with: .notRequested)
+        let info = self.mockCustomerInfo.copy(with: .notRequested, entitlementVerificationReason: nil)
 
         self.customerInfoManager.cache(customerInfo: info, appUserID: appUserID)
 
@@ -511,7 +511,7 @@ class CustomerInfoManagerTests: BaseCustomerInfoManagerTests {
 
     func testCachesCustomerInfoWithFailedVerification() {
         let appUserID = "myUser"
-        let info = self.mockCustomerInfo.copy(with: .failed)
+        let info = self.mockCustomerInfo.copy(with: .failed, entitlementVerificationReason: nil)
 
         self.customerInfoManager.cache(customerInfo: info, appUserID: appUserID)
 
@@ -521,7 +521,7 @@ class CustomerInfoManagerTests: BaseCustomerInfoManagerTests {
 
     func testDoesNotCacheCustomerInfoWithLocalEntitlements() throws {
         let appUserID = "myUser"
-        let info = self.mockCustomerInfo.copy(with: .verifiedOnDevice)
+        let info = self.mockCustomerInfo.copy(with: .verifiedOnDevice, entitlementVerificationReason: nil)
 
         self.customerInfoManager.cache(customerInfo: info, appUserID: appUserID)
 
@@ -558,7 +558,7 @@ class CustomerInfoManagerTests: BaseCustomerInfoManagerTests {
     }
 
     func testCacheCustomerInfoSendsToDelegateWhenComputedOnDevice() {
-        let info = self.mockCustomerInfo.copy(with: .verifiedOnDevice)
+        let info = self.mockCustomerInfo.copy(with: .verifiedOnDevice, entitlementVerificationReason: nil)
 
         self.customerInfoManager.cache(customerInfo: info, appUserID: "myUser")
         expect(self.customerInfoManagerChangesCallCount).toEventually(equal(1))
@@ -566,8 +566,8 @@ class CustomerInfoManagerTests: BaseCustomerInfoManagerTests {
     }
 
     func testCacheCustomerInfoSendsToDelegateAfterCachingComputedOnDevice() {
-        let info1 = self.mockCustomerInfo.copy(with: .verifiedOnDevice)
-        let info2 = self.mockCustomerInfo2.copy(with: .verifiedOnDevice)
+        let info1 = self.mockCustomerInfo.copy(with: .verifiedOnDevice, entitlementVerificationReason: nil)
+        let info2 = self.mockCustomerInfo2.copy(with: .verifiedOnDevice, entitlementVerificationReason: nil)
 
         self.customerInfoManager.cache(customerInfo: info1, appUserID: info1.originalAppUserId)
         self.customerInfoManager.cache(customerInfo: info2, appUserID: info2.originalAppUserId)

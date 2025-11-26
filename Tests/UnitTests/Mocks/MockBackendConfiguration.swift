@@ -25,6 +25,7 @@ class MockBackendConfiguration: BackendConfiguration {
         let httpClient = MockHTTPClient(apiKey: mockAPIKey,
                                         systemInfo: systemInfo,
                                         eTagManager: MockETagManager(),
+                                        jwtManager: JWTManager(),
                                         diagnosticsTracker: diagnosticsTracker,
                                         requestTimeout: 7)
 

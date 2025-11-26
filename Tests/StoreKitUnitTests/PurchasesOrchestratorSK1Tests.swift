@@ -41,7 +41,8 @@ class PurchasesOrchestratorSK1Tests: BasePurchasesOrchestratorTests, PurchasesOr
         let package = Package(identifier: "package",
                               packageType: .monthly,
                               storeProduct: .from(product: storeProduct),
-                              offeringIdentifier: "offering")
+                              offeringIdentifier: "offering",
+                              planKey: nil)
 
         let payment = storeKit1Wrapper.payment(with: product)
 
@@ -201,7 +202,8 @@ class PurchasesOrchestratorSK1Tests: BasePurchasesOrchestratorTests, PurchasesOr
         let package = Package(identifier: "package",
                               packageType: .monthly,
                               storeProduct: .from(product: storeProduct),
-                              offeringIdentifier: "offering")
+                              offeringIdentifier: "offering",
+                              planKey: nil)
 
         let payment = storeKit1Wrapper.payment(with: product)
 
@@ -341,7 +343,8 @@ class PurchasesOrchestratorSK1Tests: BasePurchasesOrchestratorTests, PurchasesOr
         let package = Package(identifier: "package",
                               packageType: .monthly,
                               storeProduct: .from(product: storeProduct),
-                              offeringIdentifier: "offering")
+                              offeringIdentifier: "offering",
+                              planKey: nil)
 
         var params = PurchaseParams.Builder(package: package)
 

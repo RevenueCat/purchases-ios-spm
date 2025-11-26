@@ -189,7 +189,8 @@ struct Template1Preview_Previews: PreviewProvider {
         return .init(identifier: "weekly",
                      packageType: .weekly,
                      storeProduct: .init(sk1Product: .init()),
-                     offeringIdentifier: "default")
+                     offeringIdentifier: "default",
+                     planKey: nil)
     }
 
     // Need to wrap in VStack otherwise preview rerenders and images won't show

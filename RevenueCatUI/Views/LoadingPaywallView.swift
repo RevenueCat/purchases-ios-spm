@@ -97,19 +97,22 @@ private extension LoadingPaywallView {
         identifier: "weekly",
         packageType: .weekly,
         storeProduct: Self.weeklyProduct.toStoreProduct(),
-        offeringIdentifier: Self.offeringIdentifier
+        offeringIdentifier: Self.offeringIdentifier,
+        planKey: nil
     )
     static let monthlyPackage = Package(
         identifier: "monthly",
         packageType: .monthly,
         storeProduct: Self.monthlyProduct.toStoreProduct(),
-        offeringIdentifier: Self.offeringIdentifier
+        offeringIdentifier: Self.offeringIdentifier,
+        planKey: nil
     )
     static let annualPackage = Package(
         identifier: "annual",
         packageType: .annual,
         storeProduct: Self.annualProduct.toStoreProduct(),
-        offeringIdentifier: Self.offeringIdentifier
+        offeringIdentifier: Self.offeringIdentifier,
+        planKey: nil
     )
     static let weeklyProduct = TestStoreProduct(
         localizedTitle: "Weekly",

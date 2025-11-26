@@ -96,6 +96,8 @@ extension CustomerInfoResponse {
         @IgnoreDecodeErrors<Store>
         var store: Store
         var isSandbox: Bool
+        @IgnoreDecodeErrors<PurchaseOwnershipType>
+        var ownershipType: PurchaseOwnershipType
 
     }
 
@@ -148,6 +150,7 @@ extension CustomerInfoResponse.Transaction: Codable, Hashable {
         case storeTransactionIdentifier = "storeTransactionId"
         case store
         case isSandbox
+        case ownershipType
 
     }
 
@@ -204,7 +207,8 @@ extension CustomerInfoResponse.Transaction {
         transactionIdentifier: String?,
         storeTransactionIdentifier: String?,
         store: Store,
-        isSandbox: Bool
+        isSandbox: Bool,
+        ownershipType: PurchaseOwnershipType = .defaultValue
     ) {
         self.purchaseDate = purchaseDate
         self.originalPurchaseDate = originalPurchaseDate
@@ -212,13 +216,15 @@ extension CustomerInfoResponse.Transaction {
         self.storeTransactionIdentifier = storeTransactionIdentifier
         self.store = store
         self.isSandbox = isSandbox
+        self.ownershipType = ownershipType
     }
 
     var asSubscription: CustomerInfoResponse.Subscription {
         return .init(purchaseDate: self.purchaseDate,
                      originalPurchaseDate: self.originalPurchaseDate,
                      store: self.store,
-                     isSandbox: self.isSandbox)
+                     isSandbox: self.isSandbox,
+                     ownershipType: self.ownershipType)
     }
 
 }
@@ -255,7 +261,8 @@ extension CustomerInfoResponse.Subscription {
                      transactionIdentifier: nil,
                      storeTransactionIdentifier: nil,
                      store: self.store,
-                     isSandbox: self.isSandbox)
+                     isSandbox: self.isSandbox,
+                     ownershipType: self.ownershipType)
     }
 
 }

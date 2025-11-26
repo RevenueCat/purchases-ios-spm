@@ -99,6 +99,16 @@ class CustomerInfoDecodingTests: BaseHTTPResponseTest {
         expect(entitlement2.purchaseDate) == dateFormatter.date(from: "1990-09-30T02:40:36Z")
     }
 
+    func testNonSubscriptionOwnershipTypeFamilyShared() throws {
+        let customerInfo: CustomerInfo = try self.decodeFixture("CustomerInfoNonSubscriptionOwnership")
+
+        let entitlement = try XCTUnwrap(customerInfo.entitlements["apple_access"])
+        expect(entitlement.ownershipType) == .familyShared
+
+        let nonSubscription = try XCTUnwrap(customerInfo.nonSubscriptions.onlyElement)
+        expect(nonSubscription.ownershipType) == .familyShared
+    }
+
     func testEntitlementsContainAllRawData() throws {
         let entitlement = try XCTUnwrap(self.customerInfo.subscriber.entitlements["premium"])
 

@@ -39,6 +39,9 @@ public final class NonSubscriptionTransaction: NSObject {
      */
     @objc public let store: Store
 
+    /// The ownership type for this transaction (purchased vs family shared).
+    @objc public let ownershipType: PurchaseOwnershipType
+
     init?(with transaction: CustomerInfoResponse.Transaction, productID: String) {
         guard let transactionIdentifier = transaction.transactionIdentifier,
               let storeTransactionIdentifier = transaction.storeTransactionIdentifier else {
@@ -52,6 +55,7 @@ public final class NonSubscriptionTransaction: NSObject {
         self.purchaseDate = transaction.purchaseDate
         self.productIdentifier = productID
         self.store = transaction.store
+        self.ownershipType = transaction.ownershipType
     }
 
     public override var description: String {
@@ -61,6 +65,7 @@ public final class NonSubscriptionTransaction: NSObject {
             purchaseDate=\(self.purchaseDate)
             transactionIdentifier=\(self.transactionIdentifier)
             storeTransactionIdentifier=\(self.storeTransactionIdentifier)
+            ownershipType=\(self.ownershipType)
         >
         """
     }

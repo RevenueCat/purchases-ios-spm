@@ -220,7 +220,7 @@ extension PeriodType: DefaultValueProvider {
             billingIssueDetectedAt=\(String(describing: self.billingIssueDetectedAt)),
             ownershipType=\(self.ownershipType),
             verification=\(self.contents.verification),
-            planKey=\(self.contents.planKey),
+            planKey=\(self.contents.planKey ?? "null"),
             pendingProductId=\(String(describing: self.contents.pendingProductId)),
             pendingProductPlanKey=\(String(describing: self.contents.pendingProductPlanKey))
             >

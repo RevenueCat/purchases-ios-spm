@@ -1,0 +1,53 @@
+{
+    "schema_version": "4",
+    "request_date": "2025-11-26T03:26:34Z",
+    "request_date_ms": 1764127594178,
+    "subscriber": {
+        "first_seen": "2025-09-25T07:50:28Z",
+        "last_seen": "2025-10-13T06:45:06Z",
+        "management_url": null,
+        "non_subscriptions": {
+            "com.goodnotes.gn6_one_time_unlock_3749": [
+                {
+                    "id": "68d4f50113f97a101c31fabc",
+                    "is_sandbox": true,
+                    "original_purchase_date": "2025-09-03T08:16:49Z",
+                    "purchase_date": "2025-09-03T08:16:49Z",
+                    "store": "app_store",
+                    "store_transaction_id": "504881249476627340",
+                    "ownership_type": "FAMILY_SHARED"
+                }
+            ]
+        },
+        "original_app_user_id": "ac59780b-d79a-4235-a6b0-5607cf59c2a8",
+        "original_application_version": null,
+        "original_purchase_date": null,
+        "other_purchases": {},
+        "subscriptions": {
+            "com.goodnotes.pro_7dt_1y_3599": {
+                "billing_issues_detected_at": null,
+                "expires_date": "2025-10-08T13:13:20Z",
+                "grace_period_expires_date": null,
+                "is_sandbox": false,
+                "original_purchase_date": "2025-09-25T07:50:54Z",
+                "ownership_type": "PURCHASED",
+                "period_type": "normal",
+                "purchase_date": "2025-10-08T12:37:20Z",
+                "store": "app_store",
+                "unsubscribe_detected_at": "2025-10-08T13:13:20Z"
+            }
+        },
+        "entitlements": {
+            "gnc_access": {
+                "expires_date": "2025-10-08T13:13:20Z",
+                "product_identifier": "com.goodnotes.pro_7dt_1y_3599",
+                "purchase_date": "2025-09-25T07:50:54Z"
+            },
+            "apple_access": {
+                "expires_date": null,
+                "product_identifier": "com.goodnotes.gn6_one_time_unlock_3749",
+                "purchase_date": "2025-09-03T08:16:49Z"
+            }
+        }
+    }
+}

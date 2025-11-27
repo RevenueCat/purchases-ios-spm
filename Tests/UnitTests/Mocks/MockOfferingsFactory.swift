@@ -42,7 +42,8 @@ class MockOfferingsFactory: OfferingsFactory {
                         Package(identifier: "$rc_monthly",
                                 packageType: .monthly,
                                 storeProduct: .from(product: storeProduct),
-                                offeringIdentifier: "base")
+                                offeringIdentifier: "base",
+                                planKey: nil)
                     ]
                 )],
             currentOfferingID: "base",
@@ -51,7 +52,7 @@ class MockOfferingsFactory: OfferingsFactory {
             response: .init(currentOfferingId: "base", offerings: [
                 .init(identifier: "base", description: "This is the base offering",
                       packages: [
-                        .init(identifier: "", platformProductIdentifier: "$rc_monthly")
+                        .init(identifier: "", platformProductIdentifier: "$rc_monthly", planKey: nil)
                       ])
             ], placements: nil, targeting: nil, uiConfig: nil)
 
@@ -69,7 +70,7 @@ extension OfferingsResponse {
             .init(identifier: "base",
                   description: "This is the base offering",
                   packages: [
-                    .init(identifier: "$rc_monthly", platformProductIdentifier: "monthly_freetrial")
+                    .init(identifier: "$rc_monthly", platformProductIdentifier: "monthly_freetrial", planKey: nil)
                   ])
         ],
         placements: nil,

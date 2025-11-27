@@ -194,7 +194,8 @@ private extension PaywallCacheWarmingTests {
                         identifier: Package.string(from: packageType)!,
                         packageType: packageType,
                         storeProduct: StoreProduct(sk1Product: MockSK1Product(mockProductIdentifier: productID)),
-                        offeringIdentifier: identifier
+                        offeringIdentifier: identifier,
+                        planKey: nil
                     )
             }
         )

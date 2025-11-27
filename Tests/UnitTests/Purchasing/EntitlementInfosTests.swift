@@ -679,6 +679,40 @@ class EntitlementInfosTests: TestCase {
 
     }
 
+    func testNonSubscriptionOwnershipTypeComesFromTransaction() throws {
+        stubResponse(
+            entitlements: [
+                "lifetime_entitlement": [
+                    "expires_date": nil,
+                    "product_identifier": "lifetime_product",
+                    "purchase_date": "2019-07-26T23:45:40Z"
+                ]
+            ],
+            nonSubscriptions: [
+                "lifetime_product": [
+                    [
+                        "id": "ownership_tx_1",
+                        "is_sandbox": false,
+                        "original_purchase_date": "2019-07-26T22:10:27Z",
+                        "purchase_date": "2019-07-26T22:10:27Z",
+                        "store": "app_store",
+                        "store_transaction_id": "ownership_tx_store_1",
+                        "ownership_type": "FAMILY_SHARED"
+                    ] as [String: Any]
+                ]
+            ],
+            subscriptions: [:]
+        )
+
+        let subscriberInfo = try CustomerInfo(data: response)
+        let entitlement = try XCTUnwrap(subscriberInfo.entitlements.active["lifetime_entitlement"])
+
+        expect(entitlement.ownershipType) == .familyShared
+
+        let nonSubscription = try XCTUnwrap(subscriberInfo.nonSubscriptions.onlyElement)
+        expect(nonSubscription.ownershipType) == .familyShared
+    }
+
     func testParseStoreFromSubscription() throws {
         stubResponse(
                 entitlements: [

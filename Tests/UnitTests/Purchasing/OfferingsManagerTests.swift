@@ -491,7 +491,7 @@ private extension OfferingsManagerTests {
                 .init(identifier: "base",
                       description: "This is the base offering",
                       packages: [
-                        .init(identifier: "$rc_monthly", platformProductIdentifier: "monthly_freetrial")
+                        .init(identifier: "$rc_monthly", platformProductIdentifier: "monthly_freetrial", planKey: nil)
                       ])
             ],
             placements: nil,
@@ -504,8 +504,8 @@ private extension OfferingsManagerTests {
                 .init(identifier: "base",
                       description: "This is the base offering",
                       packages: [
-                        .init(identifier: "$rc_monthly", platformProductIdentifier: "monthly_freetrial"),
-                        .init(identifier: "$rc_yearly", platformProductIdentifier: "yearly_freetrial")
+                        .init(identifier: "$rc_monthly", platformProductIdentifier: "monthly_freetrial", planKey: nil),
+                        .init(identifier: "$rc_yearly", platformProductIdentifier: "yearly_freetrial", planKey: nil)
                       ])
             ],
             placements: nil,
@@ -529,7 +529,8 @@ private extension OfferingsManagerTests {
                                     storeProduct: StoreProduct(sk1Product: MockSK1Product(
                                         mockProductIdentifier: package.platformProductIdentifier
                                     )),
-                                    offeringIdentifier: offering.identifier
+                                    offeringIdentifier: offering.identifier,
+                                    planKey: nil
                                 )
                         }
                     )

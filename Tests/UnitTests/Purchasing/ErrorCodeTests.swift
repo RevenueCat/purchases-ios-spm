@@ -198,8 +198,13 @@ class ErrorCodeTests: TestCase {
                                               expectedRawValue: 41)
     }
 
+    func testUnableToRefreshJWTError() {
+        ensureEnumCaseMatchesExpectedRawValue(errorCode: .unableToRefreshJWT,
+                                              expectedRawValue: 1001)
+    }
+
     func testErrorCodeEnumCasesAreCoveredInTests() {
-        expect(ErrorCode.allCases).to(haveCount(41))
+        expect(ErrorCode.allCases).to(haveCount(42))
     }
 
     func ensureEnumCaseMatchesExpectedRawValue(errorCode: ErrorCode, expectedRawValue: Int) {

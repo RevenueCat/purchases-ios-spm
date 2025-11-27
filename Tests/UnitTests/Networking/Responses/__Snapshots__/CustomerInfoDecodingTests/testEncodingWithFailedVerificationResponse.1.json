@@ -22,6 +22,7 @@
           "id" : "17459f5ff7",
           "is_sandbox" : false,
           "original_purchase_date" : 668563468,
+          "ownership_type" : "PURCHASED",
           "purchase_date" : 666230608,
           "store" : "app_store",
           "store_transaction_id" : "340001090153249"

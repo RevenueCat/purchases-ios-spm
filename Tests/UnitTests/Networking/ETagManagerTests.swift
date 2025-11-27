@@ -808,7 +808,8 @@ private extension ETagManagerTests {
                      responseHeaders: self.getHeaders(eTag: eTag),
                      body: body,
                      requestDate: requestDate,
-                     verificationResult: verificationResult)
+                     verificationResult: verificationResult,
+                     verificationReason: nil)
     }
 
     private static let testURL = HTTPRequest.Path.getCustomerInfo(appUserID: "appUserID").url!

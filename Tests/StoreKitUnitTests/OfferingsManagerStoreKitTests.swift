@@ -94,7 +94,7 @@ private extension OfferingsManagerStoreKitTests {
                 .init(identifier: "base",
                       description: "This is the base offering",
                       packages: [
-                        .init(identifier: "$rc_monthly", platformProductIdentifier: StoreKitConfigTestCase.productID)
+                        .init(identifier: "$rc_monthly", platformProductIdentifier: StoreKitConfigTestCase.productID, planKey: nil)
                       ])
             ],
             placements: nil,

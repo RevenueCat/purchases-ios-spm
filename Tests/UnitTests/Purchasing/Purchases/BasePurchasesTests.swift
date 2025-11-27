@@ -77,6 +77,7 @@ class BasePurchasesTests: TestCase {
         let httpClient = MockHTTPClient(apiKey: apiKey,
                                         systemInfo: self.systemInfo,
                                         eTagManager: MockETagManager(),
+                                        jwtManager: JWTManager(),
                                         diagnosticsTracker: self.diagnosticsTracker)
         let config = BackendConfiguration(httpClient: httpClient,
                                           operationDispatcher: self.mockOperationDispatcher,

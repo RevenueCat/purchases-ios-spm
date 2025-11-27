@@ -127,6 +127,7 @@ extension BaseBackendTests {
         return MockHTTPClient(apiKey: Self.apiKey,
                               systemInfo: self.systemInfo,
                               eTagManager: eTagManager,
+                              jwtManager: JWTManager(),
                               diagnosticsTracker: self.diagnosticsTracker,
                               sourceTestFile: file)
     }

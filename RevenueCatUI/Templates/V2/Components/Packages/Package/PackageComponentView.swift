@@ -77,7 +77,8 @@ struct PackageComponentView_Previews: PreviewProvider {
         return .init(identifier: "weekly",
                      packageType: .weekly,
                      storeProduct: .init(sk1Product: .init()),
-                     offeringIdentifier: "default")
+                     offeringIdentifier: "default",
+                     planKey: nil)
     }
 
     static let packageContext = PackageContext(

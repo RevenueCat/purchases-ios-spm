@@ -46,7 +46,8 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
         let package = Package(identifier: "package",
                               packageType: .monthly,
                               storeProduct: StoreProduct(sk2Product: product),
-                              offeringIdentifier: "offering")
+                              offeringIdentifier: "offering",
+                              planKey: nil)
         mockStoreKit2TransactionListener?.mockTransaction = .init(transaction.sk2Transaction)
         mockStoreKit2TransactionListener?.mockJWSToken = transaction.jwsRepresentation!
 
@@ -277,7 +278,8 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
         let package = Package(identifier: "package",
                               packageType: .monthly,
                               storeProduct: StoreProduct(sk2Product: product),
-                              offeringIdentifier: "offering")
+                              offeringIdentifier: "offering",
+                              planKey: nil)
         mockStoreKit2TransactionListener?.mockTransaction = .init(transaction.sk2Transaction)
         mockStoreKit2TransactionListener?.mockJWSToken = transaction.jwsRepresentation!
 
@@ -426,7 +428,8 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
         let package = Package(identifier: "package",
                               packageType: .monthly,
                               storeProduct: StoreProduct(sk2Product: product),
-                              offeringIdentifier: "offering")
+                              offeringIdentifier: "offering",
+                              planKey: nil)
         mockStoreKit2TransactionListener?.mockTransaction = .init(transaction.sk2Transaction)
         mockStoreKit2TransactionListener?.mockJWSToken = transaction.jwsRepresentation!
 

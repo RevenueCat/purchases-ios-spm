@@ -88,7 +88,7 @@ class DiagnosticsTrackerTests: TestCase {
     // MARK: - customer info verification
 
     func testDoesNotTrackWhenVerificationIsNotRequested() async {
-        let customerInfo: CustomerInfo = .emptyInfo.copy(with: .notRequested)
+        let customerInfo: CustomerInfo = .emptyInfo.copy(with: .notRequested, entitlementVerificationReason: nil)
 
         self.tracker.trackCustomerInfoVerificationResultIfNeeded(customerInfo)
 
@@ -97,7 +97,7 @@ class DiagnosticsTrackerTests: TestCase {
     }
 
     func testTracksCustomerInfoVerificationFailed() async {
-        let customerInfo: CustomerInfo = .emptyInfo.copy(with: .failed)
+        let customerInfo: CustomerInfo = .emptyInfo.copy(with: .failed, entitlementVerificationReason: nil)
 
         self.tracker.trackCustomerInfoVerificationResultIfNeeded(customerInfo)
 

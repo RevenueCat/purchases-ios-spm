@@ -42,12 +42,13 @@ class NormalCustomerInfoResponseHandlerTests: BaseCustomerInfoResponseHandlerTes
                       responseHeaders: [:],
                       body: .init(customerInfo: Self.sampleCustomerInfo,
                                   errorResponse: .default),
-                      verificationResult: .verified)
+                      verificationResult: .verified,
+                      verificationReason: nil)
             ),
             nil
         )
         expect(result).to(beSuccess())
-        expect(result.value) == Self.sampleCustomerInfo.copy(with: .verified)
+        expect(result.value) == Self.sampleCustomerInfo.copy(with: .verified, entitlementVerificationReason: nil)
 
         expect(self.factory.createRequested) == false
     }
@@ -59,12 +60,13 @@ class NormalCustomerInfoResponseHandlerTests: BaseCustomerInfoResponseHandlerTes
                       responseHeaders: [:],
                       body: .init(customerInfo: Self.sampleCustomerInfo,
                                   errorResponse: .default),
-                      verificationResult: .failed)
+                      verificationResult: .failed,
+                      verificationReason: nil)
             ),
             nil
         )
         expect(result).to(beSuccess())
-        expect(result.value) == Self.sampleCustomerInfo.copy(with: .failed)
+        expect(result.value) == Self.sampleCustomerInfo.copy(with: .failed, entitlementVerificationReason: nil)
 
         expect(self.factory.createRequested) == false
     }
@@ -97,12 +99,13 @@ class NormalCustomerInfoResponseHandlerTests: BaseCustomerInfoResponseHandlerTes
                       responseHeaders: [:],
                       body: .init(customerInfo: Self.sampleCustomerInfo,
                                   errorResponse: errorResponse),
-                      verificationResult: .notRequested)
+                      verificationResult: .notRequested,
+                      verificationReason: nil)
             ),
             nil
         )
         expect(result).to(beSuccess())
-        expect(result.value) == Self.sampleCustomerInfo.copy(with: .notRequested)
+        expect(result.value) == Self.sampleCustomerInfo.copy(with: .notRequested, entitlementVerificationReason: nil)
         expect(self.factory.createRequested) == false
 
         self.logger.verifyMessageWasLogged(

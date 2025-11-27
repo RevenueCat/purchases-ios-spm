@@ -60,23 +60,28 @@ class PurchasesGetProductsTests: BasePurchasesTests {
             .init(identifier: "package1",
                   packageType: .weekly,
                   storeProduct: .init(sk1Product: MockSK1Product(mockProductIdentifier: "product1")),
-                  offeringIdentifier: "offering"),
+                  offeringIdentifier: "offering",
+                  planKey: nil),
             .init(identifier: "package2",
                   packageType: .monthly,
                   storeProduct: .init(sk1Product: MockSK1Product(mockProductIdentifier: "product2")),
-                  offeringIdentifier: "offering"),
+                  offeringIdentifier: "offering",
+                  planKey: nil),
             .init(identifier: "package3",
                   packageType: .annual,
                   storeProduct: .init(sk1Product: MockSK1Product(mockProductIdentifier: "product3")),
-                  offeringIdentifier: "offering"),
+                  offeringIdentifier: "offering",
+                  planKey: nil),
             .init(identifier: "package4",
                   packageType: .annual,
                   storeProduct: .init(sk1Product: MockSK1Product(mockProductIdentifier: "product4")),
-                  offeringIdentifier: "offering"),
+                  offeringIdentifier: "offering",
+                  planKey: nil),
             .init(identifier: "package5",
                   packageType: .annual,
                   storeProduct: .init(sk1Product: MockSK1Product(mockProductIdentifier: "product1")),
-                  offeringIdentifier: "offering")
+                  offeringIdentifier: "offering",
+                  planKey: nil)
         ]
 
         self.trialOrIntroPriceEligibilityChecker

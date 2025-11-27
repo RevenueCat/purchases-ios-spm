@@ -54,8 +54,8 @@ class SigningTests: TestCase {
                 etag: nil,
                 requestDate: requestDate
             ),
-            publicKey: Signing.loadPublicKey()
-        )) == false
+            publicKey: Signing.loadPublicKey(),
+        )) != nil
 
         self.logger.verifyMessageWasLogged("Signature is not base64: \(signature)")
     }
@@ -86,7 +86,7 @@ class SigningTests: TestCase {
             signature: fullSignature.base64EncodedString(),
             with: parameters,
             publicKey: self.publicKey
-        )) == false
+        )) != nil
 
         self.logger.verifyMessageWasLogged("Intermediate key expired", level: .warn)
     }
@@ -117,7 +117,7 @@ class SigningTests: TestCase {
             signature: fullSignature.base64EncodedString(),
             with: parameters,
             publicKey: self.publicKey
-        )) == false
+        )) != nil
 
         self.logger.verifyMessageWasLogged(
             Strings.signing.intermediate_key_invalid(Self.invalidIntermediateKeyExpiration),
@@ -136,7 +136,7 @@ class SigningTests: TestCase {
                 requestDate: 1677005916012
             ),
             publicKey: Signing.loadPublicKey()
-        )) == false
+        )) != nil
     }
 
     func testVerifySignatureLogsWarningWhenIntermediateSignatureIsInvalid() throws {
@@ -184,7 +184,7 @@ class SigningTests: TestCase {
                 ),
                 publicKey: self.publicKey
             )
-        ) == false
+        ) != nil
 
         self.logger.verifyMessageWasLogged(Strings.signing.signature_failed_verification,
                                            level: .warn)
@@ -242,7 +242,7 @@ class SigningTests: TestCase {
                 requestDate: requestDate
             ),
             publicKey: self.publicKey
-        )) == true
+        )) == nil
     }
 
     func testVerifySignatureWithValidSignatureIncludingEtag() throws {
@@ -279,7 +279,7 @@ class SigningTests: TestCase {
                 requestDate: requestDate
             ),
             publicKey: self.publicKey
-        )) == true
+        )) == nil
     }
 
     /*
@@ -323,7 +323,7 @@ class SigningTests: TestCase {
                 ),
                 publicKey: Signing.loadPublicKey()
             )
-        ) == true
+        ) == nil
     }
 
     func testVerifyKnownSignatureWithNoNonceAndNoEtag() throws {
@@ -356,7 +356,7 @@ class SigningTests: TestCase {
                 ),
                 publicKey: Signing.loadPublicKey()
             )
-        ) == true
+        ) == nil
     }
 
     func testVerifyKnownSignatureOfEmptyResponseWithNonceAndNoEtagAndNoAPIKey() throws {
@@ -387,7 +387,7 @@ class SigningTests: TestCase {
                 ),
                 publicKey: Signing.loadPublicKey()
             )
-        ) == true
+        ) == nil
     }
 
     func testVerifyKnownSignatureOf304Response() throws {
@@ -420,7 +420,7 @@ class SigningTests: TestCase {
                 ),
                 publicKey: Signing.loadPublicKey()
             )
-        ) == true
+        ) == nil
     }
 
     func testVerifyKnownSignatureWithAnonymousUser() throws {
@@ -455,7 +455,7 @@ class SigningTests: TestCase {
                 ),
                 publicKey: Signing.loadPublicKey()
             )
-        ) == true
+        ) == nil
     }
 
     func testVerifyKnownSignatureForPostRequest() throws {
@@ -496,7 +496,7 @@ class SigningTests: TestCase {
                 ),
                 publicKey: Signing.loadPublicKey()
             )
-        ) == true
+        ) == nil
     }
 
     func testVerifyKnownSignatureForGetRequestWithSignedHeaders() throws {
@@ -535,7 +535,7 @@ class SigningTests: TestCase {
                 ),
                 publicKey: Signing.loadPublicKey()
             )
-        ) == true
+        ) == nil
     }
 
     func testVerifyKnownSignatureForPostRequestWithSignedHeadersAndPostBody() throws {
@@ -581,7 +581,7 @@ class SigningTests: TestCase {
                 ),
                 publicKey: Signing.loadPublicKey()
             )
-        ) == true
+        ) == nil
     }
 
     func testResponseVerificationWithNoProvidedKey() throws {
@@ -591,7 +591,8 @@ class SigningTests: TestCase {
             signing: self.signing,
             request: request,
             requestHeaders: [:],
-            publicKey: nil
+            publicKey: nil,
+            customPublicKey: nil
         )
 
         expect(verifiedResponse.verificationResult) == .notRequested
@@ -605,7 +606,8 @@ class SigningTests: TestCase {
             signing: self.signing,
             request: request,
             requestHeaders: [:],
-            publicKey: self.publicKey
+            publicKey: self.publicKey,
+            customPublicKey: nil
         )
 
         expect(verifiedResponse.verificationResult) == .failed
@@ -627,7 +629,8 @@ class SigningTests: TestCase {
             signing: self.signing,
             request: request,
             requestHeaders: [:],
-            publicKey: self.publicKey
+            publicKey: self.publicKey,
+            customPublicKey: nil
         )
 
         expect(verifiedResponse.verificationResult) == .failed
@@ -669,7 +672,8 @@ class SigningTests: TestCase {
             signing: self.signing,
             request: request,
             requestHeaders: requestHeaders,
-            publicKey: self.publicKey
+            publicKey: self.publicKey,
+            customPublicKey: nil
         )
 
         expect(verifiedResponse.verificationResult) == .verified
@@ -710,7 +714,8 @@ class SigningTests: TestCase {
             signing: self.signing,
             request: request,
             requestHeaders: requestHeaders,
-            publicKey: self.publicKey
+            publicKey: self.publicKey,
+            customPublicKey: nil
         )
 
         expect(verifiedResponse.verificationResult) == .verified
@@ -751,7 +756,8 @@ class SigningTests: TestCase {
             signing: self.signing,
             request: request,
             requestHeaders: requestHeaders,
-            publicKey: self.publicKey
+            publicKey: self.publicKey,
+            customPublicKey: nil
         )
 
         expect(verifiedResponse.verificationResult) == .verified
@@ -773,7 +779,8 @@ class SigningTests: TestCase {
             signing: self.signing,
             request: request,
             requestHeaders: [:],
-            publicKey: self.publicKey
+            publicKey: self.publicKey,
+            customPublicKey: nil
         )
 
         expect(verifiedResponse.verificationResult) == .notRequested

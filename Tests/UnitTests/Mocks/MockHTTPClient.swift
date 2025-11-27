@@ -39,7 +39,8 @@ class MockHTTPClient: HTTPClient {
                     responseHeaders: responseHeaders,
                     body: data
                 ),
-                verificationResult: verificationResult
+                verificationResult: verificationResult,
+                verificationReason: nil
             )
 
             self.init(response: .success(response), delay: delay)
@@ -57,6 +58,7 @@ class MockHTTPClient: HTTPClient {
     init(apiKey: String,
          systemInfo: SystemInfo,
          eTagManager: ETagManager,
+         jwtManager: JWTManager,
          diagnosticsTracker: DiagnosticsTrackerType?,
          dnsChecker: DNSCheckerType.Type = DNSChecker.self,
          requestTimeout: TimeInterval = 7,
@@ -66,6 +68,7 @@ class MockHTTPClient: HTTPClient {
         super.init(apiKey: apiKey,
                    systemInfo: systemInfo,
                    eTagManager: eTagManager,
+                   jwtManager: jwtManager,
                    signing: FakeSigning.default,
                    diagnosticsTracker: diagnosticsTracker,
                    dnsChecker: dnsChecker,

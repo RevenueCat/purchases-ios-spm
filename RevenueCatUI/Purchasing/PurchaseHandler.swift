@@ -34,7 +34,7 @@ final class PurchaseHandler: ObservableObject {
 
     private let purchases: PaywallPurchasesType
 
-    /// Where responsibiliy for completing purchases lies
+    /// Where responsibility for completing purchases lies
     var purchasesAreCompletedBy: PurchasesAreCompletedBy {
         purchases.purchasesAreCompletedBy
     }
@@ -661,6 +661,12 @@ extension EnvironmentValues {
         get { self[OfferCodeRedemptionInitiatedActionKey.self] }
         set { self[OfferCodeRedemptionInitiatedActionKey.self] = newValue }
     }
+}
+
+extension EnvironmentValues {
+    /// Overrides default `DisplayCloseButton` of the paywall.
+    /// Pass `nil` to remove the override.
+    @Entry var purchaseDisplayCloseButton: Bool? = nil
 }
 
 // MARK: -

@@ -173,6 +173,10 @@ class Backend {
         
         return token
     }
+    
+    func clearJWTToken() {
+        self.jwtManager.clearCaches()
+    }
 }
 
 extension Backend {

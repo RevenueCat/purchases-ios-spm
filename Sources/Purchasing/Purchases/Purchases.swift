@@ -1263,6 +1263,10 @@ public extension Purchases {
     func getJWTToken() async throws -> String {
         return try await self.backend.getJWTToken(appUserID: self.appUserID)
     }
+    
+    func clearJWTToken() {
+        self.backend.clearJWTToken()
+    }
 }
 
 // swiftlint:enable missing_docs

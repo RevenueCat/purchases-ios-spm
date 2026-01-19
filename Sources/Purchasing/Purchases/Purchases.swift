@@ -778,6 +778,18 @@ public extension Purchases {
         self.getOfferings(fetchPolicy: .default, completion: completion)
     }
 
+    internal func getOfferingsWithSource(
+        fetchPolicy: OfferingsManager.FetchPolicy,
+        fetchCurrent: Bool = false,
+        completion: @escaping (Offerings?, OfferingsSource?, PublicError?) -> Void
+    ) {
+        self.offeringsManager.offeringsWithSource(appUserID: self.appUserID,
+                                                  fetchPolicy: fetchPolicy,
+                                                  fetchCurrent: fetchCurrent) { @Sendable result in
+            completion(result.value?.offerings, result.value?.source, result.error?.asPublicError)
+        }
+    }
+
     internal func getOfferings(
         fetchPolicy: OfferingsManager.FetchPolicy,
         fetchCurrent: Bool = false,
@@ -794,12 +806,22 @@ public extension Purchases {
         return try await self.offerings(fetchPolicy: .default)
     }
 
+    func offeringsWithSource() async throws -> (offerings: Offerings, source: OfferingsSource) {
+        return try await self.offeringsWithSource(fetchPolicy: .default)
+    }
+
     var cachedOfferings: Offerings? {
         return self.offeringsManager.cachedOfferings
     }
 
     internal func offerings(fetchPolicy: OfferingsManager.FetchPolicy) async throws -> Offerings {
         return try await self.offeringsAsync(fetchPolicy: fetchPolicy)
+    }
+
+    internal func offeringsWithSource(
+        fetchPolicy: OfferingsManager.FetchPolicy
+    ) async throws -> (offerings: Offerings, source: OfferingsSource) {
+        return try await self.offeringsWithSourceAsync(fetchPolicy: fetchPolicy)
     }
 
 }

@@ -461,6 +461,10 @@ extension MockPurchases: PurchasesSwiftType {
         self.unimplemented()
     }
 
+    func offeringsWithSource() async throws -> (offerings: Offerings, source: OfferingsSource) {
+        self.unimplemented()
+    }
+
     func beginRefundRequest(
         forProduct productID: String,
         completion: @escaping (Result<RefundRequestStatus, PublicError>) -> Void

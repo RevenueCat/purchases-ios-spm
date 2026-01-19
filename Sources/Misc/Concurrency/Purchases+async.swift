@@ -57,6 +57,19 @@ extension Purchases {
         }
     }
 
+    func offeringsWithSourceAsync(
+        fetchPolicy: OfferingsManager.FetchPolicy
+    ) async throws -> (offerings: Offerings, source: OfferingsSource) {
+        return try await withUnsafeThrowingContinuation { continuation in
+            self.getOfferingsWithSource(fetchPolicy: fetchPolicy) { offerings, source, error in
+                let resultValue = offerings.flatMap { offerings in
+                    source.map { (offerings: offerings, source: $0) }
+                }
+                continuation.resume(with: Result(resultValue, error))
+            }
+        }
+    }
+
     func productsAsync(_ productIdentifiers: [String]) async -> [StoreProduct] {
         return await withUnsafeContinuation { continuation in
             getProducts(productIdentifiers) { result in

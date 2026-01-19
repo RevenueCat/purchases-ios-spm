@@ -1035,6 +1035,14 @@ public protocol PurchasesSwiftType: AnyObject {
     /// - Important: this method is not thread-safe.
     var customerInfoStream: AsyncStream<CustomerInfo> { get }
 
+    /**
+     * Fetch the configured ``Offerings`` for this user, returning the data source.
+     *
+     * The returned source indicates whether offerings were loaded from cache (memory or disk)
+     * or fetched from the RevenueCat backend.
+     */
+    func offeringsWithSource() async throws -> (offerings: Offerings, source: OfferingsSource)
+
     #if os(iOS) || VISION_OS
 
     /**

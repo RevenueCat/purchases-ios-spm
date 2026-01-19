@@ -81,6 +81,17 @@ extension Offerings.Placements: Sendable {}
 extension Offerings.Targeting: Sendable {}
 extension Offerings: Sendable {}
 
+/// Indicates where ``Offerings`` were loaded from.
+public enum OfferingsSource: Int {
+
+    /// Offerings were loaded from cache (memory or disk).
+    case cache
+
+    /// Offerings were fetched from the RevenueCat backend.
+    case remote
+
+}
+
 public extension Offerings {
 
     /**

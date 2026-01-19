@@ -45,18 +45,38 @@ class OfferingsManager {
         fetchCurrent: Bool = false,
         completion: (@MainActor @Sendable (Result<Offerings, Error>) -> Void)?
     ) {
+        self.offeringsWithSource(appUserID: appUserID,
+                                 fetchPolicy: fetchPolicy,
+                                 fetchCurrent: fetchCurrent) { result in
+            completion?(result.map { $0.offerings })
+        }
+    }
+
+    func offeringsWithSource(
+        appUserID: String,
+        fetchPolicy: FetchPolicy = .default,
+        fetchCurrent: Bool = false,
+        completion: (@MainActor @Sendable (Result<(offerings: Offerings, source: OfferingsSource), Error>) -> Void)?
+    ) {
         guard !fetchCurrent else {
-            self.fetchFromNetwork(appUserID: appUserID, fetchPolicy: fetchPolicy, completion: completion)
+            self.fetchFromNetworkWithSource(appUserID: appUserID,
+                                            fetchPolicy: fetchPolicy,
+                                            completion: completion)
             return
         }
 
         guard let memoryCachedOfferings = self.cachedOfferings else {
-            self.fetchFromNetwork(appUserID: appUserID, fetchPolicy: fetchPolicy, completion: completion)
+            self.fetchFromNetworkWithSource(appUserID: appUserID,
+                                            fetchPolicy: fetchPolicy,
+                                            completion: completion)
             return
         }
 
         Logger.debug(Strings.offering.vending_offerings_cache_from_memory)
-        self.dispatchCompletionOnMainThreadIfPossible(completion, value: .success(memoryCachedOfferings))
+        self.dispatchCompletionOnMainThreadIfPossible(
+            completion,
+            value: .success((offerings: memoryCachedOfferings, source: .cache))
+        )
 
         self.systemInfo.isApplicationBackgrounded { isAppBackgrounded in
             if self.deviceCache.isOfferingsCacheStale(isAppBackgrounded: isAppBackgrounded) {
@@ -78,6 +98,19 @@ class OfferingsManager {
         fetchPolicy: FetchPolicy = .default,
         completion: (@MainActor @Sendable (Result<Offerings, Error>) -> Void)?
     ) {
+        self.updateOfferingsCacheWithSource(appUserID: appUserID,
+                                            isAppBackgrounded: isAppBackgrounded,
+                                            fetchPolicy: fetchPolicy) { result in
+            completion?(result.map { $0.offerings })
+        }
+    }
+
+    func updateOfferingsCacheWithSource(
+        appUserID: String,
+        isAppBackgrounded: Bool,
+        fetchPolicy: FetchPolicy = .default,
+        completion: (@MainActor @Sendable (Result<(offerings: Offerings, source: OfferingsSource), Error>) -> Void)?
+    ) {
         self.backend.offerings.getOfferings(appUserID: appUserID, isAppBackgrounded: isAppBackgrounded) { result in
             switch result {
             case let .success(response):
@@ -93,7 +126,10 @@ class OfferingsManager {
                 self.fetchCachedOfferingsFromDisk(appUserID: appUserID,
                                                   fetchPolicy: fetchPolicy) { offerings in
                     if let offerings = offerings {
-                        self.dispatchCompletionOnMainThreadIfPossible(completion, value: .success(offerings))
+                        self.dispatchCompletionOnMainThreadIfPossible(
+                            completion,
+                            value: .success((offerings: offerings, source: .cache))
+                        )
                     } else {
                         self.handleOfferingsUpdateError(.backendError(.networkError(networkError)),
                                                         completion: completion)
@@ -137,13 +173,24 @@ private extension OfferingsManager {
         fetchPolicy: FetchPolicy = .default,
         completion: (@MainActor @Sendable (Result<Offerings, Error>) -> Void)?
     ) {
+        self.fetchFromNetworkWithSource(appUserID: appUserID,
+                                        fetchPolicy: fetchPolicy) { result in
+            completion?(result.map { $0.offerings })
+        }
+    }
+
+    func fetchFromNetworkWithSource(
+        appUserID: String,
+        fetchPolicy: FetchPolicy = .default,
+        completion: (@MainActor @Sendable (Result<(offerings: Offerings, source: OfferingsSource), Error>) -> Void)?
+    ) {
         Logger.debug(Strings.offering.no_cached_offerings_fetching_from_network)
 
         self.systemInfo.isApplicationBackgrounded { isAppBackgrounded in
-            self.updateOfferingsCache(appUserID: appUserID,
-                                      isAppBackgrounded: isAppBackgrounded,
-                                      fetchPolicy: fetchPolicy,
-                                      completion: completion)
+            self.updateOfferingsCacheWithSource(appUserID: appUserID,
+                                                isAppBackgrounded: isAppBackgrounded,
+                                                fetchPolicy: fetchPolicy,
+                                                completion: completion)
         }
     }
 
@@ -231,13 +278,30 @@ private extension OfferingsManager {
         fetchPolicy: FetchPolicy,
         completion: (@MainActor @Sendable (Result<Offerings, Error>) -> Void)?
     ) {
+        self.handleOfferingsBackendResult(with: response,
+                                          appUserID: appUserID,
+                                          fetchPolicy: fetchPolicy,
+                                          completion: completion.map { completion in
+            { result in completion(result.map { $0.offerings }) }
+        })
+    }
+
+    func handleOfferingsBackendResult(
+        with response: OfferingsResponse,
+        appUserID: String,
+        fetchPolicy: FetchPolicy,
+        completion: (@MainActor @Sendable (Result<(offerings: Offerings, source: OfferingsSource), Error>) -> Void)?
+    ) {
         self.createOfferings(from: response, fetchPolicy: fetchPolicy) { result in
             switch result {
             case let .success(offerings):
                 Logger.rcSuccess(Strings.offering.offerings_stale_updated_from_network)
 
                 self.deviceCache.cache(offerings: offerings, appUserID: appUserID)
-                self.dispatchCompletionOnMainThreadIfPossible(completion, value: .success(offerings))
+                self.dispatchCompletionOnMainThreadIfPossible(
+                    completion,
+                    value: .success((offerings: offerings, source: .remote))
+                )
 
             case let .failure(error):
                 self.handleOfferingsUpdateError(error, completion: completion)
@@ -255,9 +319,9 @@ private extension OfferingsManager {
         }
     }
 
-    func handleOfferingsUpdateError(
+    func handleOfferingsUpdateError<T>(
         _ error: Error,
-        completion: (@MainActor @Sendable (Result<Offerings, Error>) -> Void)?
+        completion: (@MainActor @Sendable (Result<T, Error>) -> Void)?
     ) {
         Logger.appleError(Strings.offering.fetching_offerings_error(error: error,
                                                                     underlyingError: error.underlyingError))

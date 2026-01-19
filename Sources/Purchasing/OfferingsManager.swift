@@ -282,7 +282,12 @@ private extension OfferingsManager {
                                           appUserID: appUserID,
                                           fetchPolicy: fetchPolicy,
                                           completion: completion.map { completion in
-            { result in completion(result.map { $0.offerings }) }
+            { result in
+                self.dispatchCompletionOnMainThreadIfPossible(
+                    completion,
+                    value: result.map { $0.offerings }
+                )
+            }
         })
     }
 

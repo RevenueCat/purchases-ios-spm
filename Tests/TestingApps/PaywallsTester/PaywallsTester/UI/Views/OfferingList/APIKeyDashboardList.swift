@@ -172,10 +172,6 @@ struct APIKeyDashboardList: View {
         }
     }
 
-    private func offeringHasComponents(_ offering: Offering) -> Bool {
-        offering.paywallComponents != nil
-    }
-
     private func filteredOfferings(for template: Template, in data: Data) -> [Offering] {
         let offerings = data.offeringsBySection[template] ?? []
         guard !searchText.isEmpty else { return offerings }
@@ -185,6 +181,7 @@ struct APIKeyDashboardList: View {
         }
     }
 
+
     @ViewBuilder
     private func list(with data: Data) -> some View {
         List {
@@ -193,7 +190,7 @@ struct APIKeyDashboardList: View {
                 if !offerings.isEmpty {
                     Section {
                         ForEach(offerings, id: \.id) { offering in
-                            if offering.paywall != nil || offeringHasComponents(offering) {
+                            if offering.hasPaywall {
                                 #if targetEnvironment(macCatalyst)
                                 NavigationLink(
                                     destination: PaywallPresenter(offering: offering,

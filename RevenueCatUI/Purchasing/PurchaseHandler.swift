@@ -784,6 +784,12 @@ extension EnvironmentValues {
     }
 }
 
+extension EnvironmentValues {
+    /// Overrides default `DisplayCloseButton` of the paywall.
+    /// Pass `nil` to remove the override.
+    @Entry var purchaseDisplayCloseButton: Bool? = nil
+}
+
 // MARK: -
 
 private extension CustomerInfo {
